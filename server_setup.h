@@ -1,19 +1,6 @@
 #ifndef SERVER_SETUP_H
 #define SERVER_SETUP_H
 
-#include <arpa/inet.h>
-#include <netinet/tcp.h>
-#include <sys/select.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <string.h>
-#include <ctype.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <netdb.h>
-#include <assert.h>
 #include "keepalive.h"
 
 #define MAX_WAIT 10
@@ -47,5 +34,29 @@ int accept_new_user(int listen_fd, struct sockaddr_storage *new_address);
 
 /* Add a user with a given fd and sockaddr to the list of users */
 void add_user(int fd, struct sockaddr_storage *address, struct user *users);
+
+/* Find the user associated with the given fd */
+struct user *get_user(int fd);
+
+/* Handle the message that was received */
+void handle_message(struct user *users, struct user *sender, struct cJSON *recvJSON, fd_set *master);
+
+/* Generate text saying that the given user has left the chat room */
+char *generate_user_left_message(struct user *sender);
+
+/* Send help text to the given user */
+void send_help_text(struct user *user);
+
+/* Initialize the new user's information and send a message that the user has entered the chat room */
+void initialize_user(struct user *new_user, char *name, struct user *users);
+
+/* Send a list of currently connected users to the given user */
+void send_who_list(struct user *all_users, struct user *requester);
+
+/* Send a message to all users except for the user who initially sent the message */
+void send_to_all(struct user *users, char *send_msg, struct user *sender);
+
+/* Send a message to the specified user */
+void send_to_user(char *send_msg, struct user *user);
 
 #endif

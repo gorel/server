@@ -93,7 +93,24 @@ int main(int argc, char *argv[])
 				//Otherwise, an existing client sent the message
 				else
 				{
-					/* TODO: Handle incoming messages */
+					//Receive the next message
+					 if ((num_bytes = recv(i, msg, MAXLEN - 1, 0)) == -1)
+                            perror("Receive");
+                            
+                    //Make sure the message is null-terminated
+                    msg[num_bytes] = '\0';
+                    
+                    //Parse the JSON message
+                    cJSON *recvJSON = cJSON_Parse(msg);
+                    
+                    //Find out which user sent the message
+                    struct user *sender = get_user(i);
+                    
+                    //Handle the message sent
+                    handle_message(users, sender, recvJSON, &master);
+                    
+                    //Delete the cJSON Object
+                    cJSON_Delete(recvJSON);
 				}
 			}//sockfd found
 		}//for
