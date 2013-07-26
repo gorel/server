@@ -122,8 +122,12 @@ struct user *get_user(struct user *users, int fd)
 	return userptr;
 }
 
+/* Handle the message that was received */
 void handle_message(struct user **users, struct user *sender, struct cJSON *recvJSON, fd_set *master)
 {
+	//This char array will hold the ipv4 printable version of the user's IP
+	char ipv4[INET_ADDRSTRLEN];
+
 	//If recvJSON is null, the user has quit unexpectedly
 	if (recvJSON == NULL)
     {
@@ -134,20 +138,21 @@ void handle_message(struct user **users, struct user *sender, struct cJSON *recv
         	char *send_msg = generate_user_left_message(sender);
             
             //Send the message to all clients
-            sendToAll(*users, send_msg, sender);
+            send_to_all(*users, send_msg, sender);
         }
         
         //Remove the user from the users list
-        FD_CLR(i, master);
-        removeUser(users, sender);
+        FD_CLR(sender->fd, master);
+        remove_user(users, sender);
         return;
     }
     
     // If the user has not been initialized yet, fill in the user's data
     if (sender->name == NULL)
     {
-            initializeUser(sender, recvJSON, users);
-            continue;
+    	char *name = cJSON_GetObjectItem(recvJSON, "from")->valuestring;	
+		initialize_user(sender, name, *users);
+		return;
     }
     
     // Find out what message the user sent
@@ -160,40 +165,37 @@ void handle_message(struct user **users, struct user *sender, struct cJSON *recv
 		char *send_msg = generate_user_left_message(sender);
 	
 		//Send the message to all clients
-		sendToAll(*users, send_msg, sender);
+		send_to_all(*users, send_msg, sender);
             
         //Remove the user from the users list
-        FD_CLR(i, master);
-        removeUser(users, sender);
-        continue;
+        FD_CLR(sender->fd, master);
+        remove_user(users, sender);
+        return;
     }
     
     // If the user is requesting a list of current users, build and send one.
     if (!strcmp("!who", msg))
     {
     	send_who_list(*users, sender);
-    	continue;
+    	return;
     }
     
     //If the user is asking for the help text, send it
     if (!strcmp("!help", msg))
     {
     	send_help_text(sender);
-    	continue;
+    	return;
     }
     
     // Default case; user sent a message which needs relayed to other users.
-    if (inet_ntop(AF_INET, &(((struct sockaddr_in *)&(userptr->addr))->sin_addr), ipv4, INET_ADDRSTRLEN) == NULL)
-    {
+    if (inet_ntop(AF_INET, &(((struct sockaddr_in *)&(sender->addr))->sin_addr), ipv4, INET_ADDRSTRLEN) == NULL)
             perror("Network to printable");
-            return 2;
-    }
     
     // Print the user's chat to the server's console
     printf("%s: %s\n", sender->name, msg);
                                     
     // Send message to other users
-    sendToAll(*users, msg, sender);
+    send_to_all(*users, msg, sender);
 }
 
 /* Generate text saying that the given user has left the chat room */
@@ -203,7 +205,7 @@ char *generate_user_left_message(struct user *sender)
 	cJSON *sendJSON = cJSON_CreateObject();
 	
 	//Print to standard output that the user has left the chat
-    fprintf(stderr, "%s has left the chat.\n", userptr->name);
+    fprintf(stderr, "%s has left the chat.\n", sender->name);
     
     //Allocate space for the leaveText
     char leaveText[strlen(" has left the chat.") + strlen(sender->name) + 1];
@@ -236,7 +238,8 @@ void send_help_text(struct user *user)
     
     //Fill in the JSON data
     cJSON_AddNumberToObject(sendJSON, "mlen", strlen(helptext));
-    cJSON_AddStingToObject(sendJSON, "msg", helptext);
+    cJSON_AddStringToObject(sendJSON, "msg", helptext);
+    cJSON_AddStringToObject(sendJSON, "from", "SERVER");
     
     //Get the JSON data in string format
     char *send_msg = cJSON_Print(sendJSON);

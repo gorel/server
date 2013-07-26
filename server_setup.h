@@ -2,8 +2,10 @@
 #define SERVER_SETUP_H
 
 #include "keepalive.h"
+#include "cJSON.h"
 
 #define MAX_WAIT 10
+#define MAXLEN 1024
 #define MAXMSG 512
 
 #define EARTH_IS_THIRD_PLANET_FROM_THE_SUN 1
@@ -36,10 +38,10 @@ int accept_new_user(int listen_fd, struct sockaddr_storage *new_address);
 void add_user(int fd, struct sockaddr_storage *address, struct user *users);
 
 /* Find the user associated with the given fd */
-struct user *get_user(int fd);
+struct user *get_user(struct user *users, int fd);
 
 /* Handle the message that was received */
-void handle_message(struct user *users, struct user *sender, struct cJSON *recvJSON, fd_set *master);
+void handle_message(struct user **users, struct user *sender, struct cJSON *recvJSON, fd_set *master);
 
 /* Generate text saying that the given user has left the chat room */
 char *generate_user_left_message(struct user *sender);
@@ -58,5 +60,8 @@ void send_to_all(struct user *users, char *send_msg, struct user *sender);
 
 /* Send a message to the specified user */
 void send_to_user(char *send_msg, struct user *user);
+
+/* Remove a user from a linked list of users */
+void remove_user(struct user **users, struct user *user_to_remove);
 
 #endif

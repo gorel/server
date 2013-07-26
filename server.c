@@ -9,7 +9,9 @@ int main(int argc, char *argv[])
 	//The port is the first command line argument
 	const char *PORT = argv[1];
 
-	int listen_fd, new_fd, fdmax;
+	int listen_fd, new_fd, fdmax, num_bytes;
+	
+	char msg[MAXLEN];
 	
 	struct addrinfo hints;					//Desired socket properties
 	struct addrinfo *addrs;					//Linked list of addresses
@@ -104,10 +106,10 @@ int main(int argc, char *argv[])
                     cJSON *recvJSON = cJSON_Parse(msg);
                     
                     //Find out which user sent the message
-                    struct user *sender = get_user(i);
+                    struct user *sender = get_user(users, i);
                     
                     //Handle the message sent
-                    handle_message(users, sender, recvJSON, &master);
+                    handle_message(&users, sender, recvJSON, &master);
                     
                     //Delete the cJSON Object
                     cJSON_Delete(recvJSON);
