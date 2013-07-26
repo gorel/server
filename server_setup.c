@@ -23,7 +23,10 @@ void resolve_listener(const char *PORT, struct addrinfo *hints, struct addrinfo 
 {
 	int err;
 	if ((err = getaddrinfo(NULL, PORT, hints, addrs)) != 0)
-		error("Error resolving listener", 2);
+	{
+		perror("Resolve listener");
+		exit(1); //TODO: return vals
+	}
 }
 
 /* Establish the server's socket */
@@ -45,10 +48,18 @@ void establish_socket(struct addrinfo *addrs, int *listen_fd)
 		{
 			//Allow a port to be reused immediately upon close restart
 			if (setsockopt(*listen_fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1)
+			{
 				perror("Reusable socket");
+				exit(1); //TODO: Fix return vals
+			}
+			
 			//Bind the socket to the specified port
 			if (bind(*listen_fd, iter->ai_addr, iter->ai_addrlen) < 0)
+			{
 				perror("Bind");
+				exit(1); //TODO: Fix return vals
+			}
+			
 			//Socket binding setup successful.  Exit the loop.
 			else break;
 		}
@@ -59,7 +70,10 @@ void establish_socket(struct addrinfo *addrs, int *listen_fd)
 	
 	//If iter is NULL, there was a failure to bind to any address
 	if (iter == NULL)
-		error("Failed to bind.", 4);
+	{
+		perror("Bind");
+		exit(1); //TODO: return vals
+	}
 			
 }
 
@@ -74,22 +88,21 @@ int accept_new_user(int listen_fd, struct sockaddr_storage *new_address)
 	if ((new_fd = accept(listen_fd, (struct sockaddr *)new_address, &addrLen)) == -1)
 	{
 		    perror("Accept");
-		    return 2;
+		    exit(1); //TODO: return vals
 	}
 
 	//Find the string representation of the given socket address
-	if (inet_ntop(AF_INET, &(((struct sockaddr_in *)new_address)->sin_addr), ipv4, INET_ADDRSTRLEN) == NULL)
 	if (inet_ntop(AF_INET, &(((struct sockaddr_in *)&new_address)->sin_addr), ipv4, INET_ADDRSTRLEN) == NULL)
 	{
 		    perror("Network to printable");
-		    return 2;
+		    exit(1); //TODO: return vals
 	}
 	
 	return new_fd;
 }
 
 /* Add a user with a given fd and sockaddr to the list of users */
-void add_user(int fd, struct sockaddr_storage *address, struct user *users)
+void add_user(int fd, struct sockaddr_storage *address, struct user **users)
 {
 	struct user *temp;
 	struct user *userptr;
@@ -102,11 +115,20 @@ void add_user(int fd, struct sockaddr_storage *address, struct user *users)
     temp->addr = *((struct sockaddr *)address);
     temp->next = NULL;
     
-    //Go to the end of the linked list
-    for (userptr = users; userptr->next != NULL; userptr = userptr->next);
-    
-    //Add the new user to the list of users
-    userptr->next = temp;
+    //If this is the first user being added, the head will be NULL, so account for that
+    if (*users == NULL)
+    {
+    	//The user being added is the only user currently on the server
+    	*users = temp;
+    }
+    else
+    {
+		//Go to the end of the linked list
+		for (userptr = *users; userptr->next != NULL; userptr = userptr->next);
+		
+		//Add the new user to the list of users
+		userptr->next = temp;
+	}
 }
 
 /* Find the user associated with the given fd */
@@ -152,6 +174,9 @@ void handle_message(struct user **users, struct user *sender, struct cJSON *recv
     {
     	char *name = cJSON_GetObjectItem(recvJSON, "from")->valuestring;	
 		initialize_user(sender, name, *users);
+		
+		//Print the user join message to the server
+		printf("%s has joined the chat server.\n", name);
 		return;
     }
     
@@ -189,7 +214,10 @@ void handle_message(struct user **users, struct user *sender, struct cJSON *recv
     
     // Default case; user sent a message which needs relayed to other users.
     if (inet_ntop(AF_INET, &(((struct sockaddr_in *)&(sender->addr))->sin_addr), ipv4, INET_ADDRSTRLEN) == NULL)
+    {
             perror("Network to printable");
+            exit(1); //TODO: Return vals
+	}
     
     // Print the user's chat to the server's console
     printf("%s: %s\n", sender->name, msg);
@@ -269,6 +297,9 @@ void initialize_user(struct user *new_user, char *name, struct user *users)
 	//Print "<name> has joined the chat." to the welcome_msg string
 	sprintf(welcome_msg, "%s has joined the chat.", name);
 	
+	//Print to the server console that a new user has joined
+	printf("%s\n", welcome_msg);
+	
 	//Add the data to the sendJSON
 	cJSON_AddNumberToObject(sendJSON, "mlen", strlen(welcome_msg));
 	cJSON_AddStringToObject(sendJSON, "msg", welcome_msg);
@@ -319,15 +350,21 @@ void send_who_list(struct user *all_users, struct user *requester)
 
 /* Send a message to all users except for the user who initially sent the message */
 void send_to_all(struct user *users, char *send_msg, struct user *sender)
-{
+{	
+	//Iterate through the users list
 	struct user *iter = users;
 	while (iter != NULL)
 	{
 		//If the current user is not the sender,
 		if (iter != sender)
+		{
 			//Send the message to that user
 			if (send(iter->fd, send_msg, strlen(send_msg), 0) == -1)
+			{
 				perror("Send");
+				exit(1); //TODO: Return vals
+			}
+		}
 	}
 }
 

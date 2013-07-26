@@ -35,7 +35,7 @@ void establish_socket(struct addrinfo *addrs, int *listen_fd);
 int accept_new_user(int listen_fd, struct sockaddr_storage *new_address);
 
 /* Add a user with a given fd and sockaddr to the list of users */
-void add_user(int fd, struct sockaddr_storage *address, struct user *users);
+void add_user(int fd, struct sockaddr_storage *address, struct user **users);
 
 /* Find the user associated with the given fd */
 struct user *get_user(struct user *users, int fd);

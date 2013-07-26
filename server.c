@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
 	struct addrinfo hints;					//Desired socket properties
 	struct addrinfo *addrs;					//Linked list of addresses
 	struct sockaddr_storage new_address;	//Address of a user that has not been seen until now
-	struct user *users;						//List of users currently connected
+	struct user *users = NULL;				//List of users currently connected
 	//struct user *userptr;					//Iterator to traverse over the user list
 	fd_set master, read;					//Used to monitor all users to create a multiplexed server
 		
@@ -26,9 +26,6 @@ int main(int argc, char *argv[])
 	//Zero out the fd_sets
 	FD_ZERO(&master);
 	FD_ZERO(&read);
-	
-	//Allocate storage for the linked list of users
-	users = (struct user *)malloc(sizeof(struct user));
 	
 	//Zero out the addrinfo hints
 	memset(&hints, 0, sizeof(hints));
@@ -46,7 +43,10 @@ int main(int argc, char *argv[])
 	
 	//Make the server start listening on the port
 	if (listen(listen_fd, MAX_WAIT) == -1)
-		error("Error with listen.", 5);
+	{
+		perror("Listen");
+		return 5;
+	}
 		
 	//Free addrs
 	freeaddrinfo(addrs);
@@ -68,7 +68,10 @@ int main(int argc, char *argv[])
 		
 		//Monitor all currently connected clients
 		if (select(fdmax + 1, &read, NULL, NULL, NULL) == -1)
-			error("Error with select.", 6);
+		{
+			perror("Select");
+			return 6;
+		}
 		
 		//Find out which client sent the message
 		for (i = 0; i <= fdmax; i++)
@@ -82,22 +85,22 @@ int main(int argc, char *argv[])
 					//Accept the connection and find which fd the user is located at
 					new_fd = accept_new_user(listen_fd, &new_address);
 					//Add the user to the list of currently connected users
-					add_user(new_fd, &new_address, users);
+					add_user(new_fd, &new_address, &users);
 					
 					//Update the master fd_set and fdmax
                     FD_SET(new_fd, &master);
                     if (new_fd > fdmax)
                     	fdmax = new_fd;
-                    	
-                    //Print out that a new connection was accepted
-                    printf("New client connected.\n");
 				}
 				//Otherwise, an existing client sent the message
 				else
 				{
 					//Receive the next message
 					 if ((num_bytes = recv(i, msg, MAXLEN - 1, 0)) == -1)
+					 {
                             perror("Receive");
+                            exit(1); //TODO: Return vals
+                     }
                             
                     //Make sure the message is null-terminated
                     msg[num_bytes] = '\0';
