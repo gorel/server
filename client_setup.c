@@ -97,6 +97,7 @@ void *receive(void *thread_data)
             //Ensure the message is null terminated
             msg[mlen] = '\0';
             
+            //Print out the message being sent
             if (!strcmp(from, "SERVER"))
             	printf("%s\n", msg);
             else
@@ -137,6 +138,9 @@ int send_new_message(int server_fd)
 	
 	//Create the cJSON object which will be sent
 	cJSON *sendJSON = cJSON_CreateObject();
+	
+	//Put a simple ":" up so the user knows that input is being accepted
+	printf(":");
 	
 	//Read a message in from the user
 	if ((num_bytes = read(STDIN_FILENO, msg, MAXMSG - 1)) < 0)

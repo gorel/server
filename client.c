@@ -43,6 +43,9 @@ int main(int argc, char *argv[])
 	//Send the initial message to the server
 	send_initial_message(server_fd, name);
 	
+	//Tell the user they have connected to the chat server
+	printf("You are now connected to the chat server.  Say hello!\n");
+	
 	//The thread that will receive messages
 	pthread_t receiverThread;
 	
@@ -52,7 +55,6 @@ int main(int argc, char *argv[])
 	
 	//Start the receiver thread
 	pthread_create(&receiverThread, NULL, receive, (void *)args);
-	
 	
 	//Main client code.  Loop forever.
 	while (IU_SUCKS)
