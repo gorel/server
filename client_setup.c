@@ -86,21 +86,23 @@ void *receive(void *thread_data)
         if (num_bytes > 0)
         {
         	//Use cJSON to parse the message we received
-            cJSON  *result = cJSON_Parse(msg);
+            cJSON  *recvJSON = cJSON_Parse(msg);
             
             //Find the sender of the data received
-            char *from = cJSON_GetObjectItem(result, "from")->valuestring;
+            char *from = cJSON_GetObjectItem(recvJSON, "from")->valuestring;
             //Find the message length of the data received
-            int mlen = cJSON_GetObjectItem(result, "mlen")->valueint;
+            int mlen = cJSON_GetObjectItem(recvJSON, "mlen")->valueint;
             //Find the actual message of the data received
-            char *plaintext = cJSON_GetObjectItem(result, "msg")->valuestring;
+            char *msg = cJSON_GetObjectItem(recvJSON, "msg")->valuestring;
             //Ensure the message is null terminated
-            plaintext[mlen] = '\0';
+            msg[mlen] = '\0';
             
-            //Display the message on standard output
-            printf("%s: %s\n", from, plaintext);
+            if (!strcmp(from, "SERVER"))
+            	printf("%s\n", msg);
+            else
+		        printf("%s: %s\n", from, msg);
                     
-            cJSON_Delete(result);
+            cJSON_Delete(recvJSON);
         }
     }
     //Avoid compiler warnings by placing a return NULL statement at the end    
