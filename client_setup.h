@@ -2,16 +2,46 @@
 #define CLIENT_SETUP_H
 
 #include "keepalive.h"
+#include <pthread.h>
+#include "cJSON.h"
+
 
 #define IU_SUCKS 1
+#define NAMELEN 20
+
+#define MAXLEN 1024
+#define MAXMSG 512
+
+#define QUIT_OPTION 1
+
+struct thread_data
+{
+	int fd;	//the fd 
+	
+};
 
 /* Print out the given error message and exit the program with the given error code */
 void error(char *message, int err_code);
+
+/* Get the user's name */
+char *get_name(void);
 
 /* Resolve the listener */
 void get_addr_info(const char *HOSTNAME, const char *PORT, struct addrinfo *hints, struct addrinfo **addrs);
 
 /* Establish the socket and connect to the host */
 void establish_connection(int *new_fd, struct addrinfo *addrs);
+
+/* Create an extra thread to output when a new message is received
+ * This allows the user to send messages and receive them in real time
+ * instead of having an awkward "all-at-once" kind of connection
+ */
+void *receive(void *thread_data);
+
+/* Send initial data to the server */
+void send_initial_message(int server_fd, char *name);
+
+/* Wait for the user to input text then send it to the server */
+int send_new_message(int server_fd);
 
 #endif
