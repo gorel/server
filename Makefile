@@ -1,10 +1,11 @@
 CFLAGS = -Wall -Werror -g
+CLIB = -lm -lpthread
 
 all: server client
 	rm -f *.o *~
 
 server: server.c server_setup
-	gcc server.c $(CFLAGS) -o server -L. -lserver -lkeepalive
+	gcc server.c cJSON.c  $(CFLAGS) -o server $(CLIB) -L. -lserver -lkeepalive
 
 server_setup: server_setup.c keepalive
 	gcc -c $(CFLAGS) server_setup.c -L. -lkeepalive
@@ -17,7 +18,7 @@ keepalive: keepalive.c
 	rm keepalive.o
 
 client: client.c client_setup
-	gcc client.c $(CFLAGS) -o client -L. -lclient -lkeepalive
+	gcc client.c cJSON.c $(CFLAGS) -o client $(CLIB) -L. -lclient -lkeepalive
 
 client_setup: client_setup.c keepalive
 	gcc -c $(CFLAGS) client_setup.c -L. -lkeepalive
