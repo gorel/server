@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
 	
-	//Get the address info
+	//Get the address info -- argv[1] = hostname, argv[2] = port number
 	get_addr_info(argv[1], argv[2], &hints, &addrs);
 	
 	//Establish the connection to the host
@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
 
 	//Send the initial message to the server
 	send_initial_message(server_fd, name);
-	printf("!");
+	
 	//Get the server's response here
 	receive_initial_message(server_fd);
 	
@@ -59,17 +59,20 @@ int main(int argc, char *argv[])
 	//Start the receiver thread
 	pthread_create(&receiverThread, NULL, receive, (void *)args);
 	
+	//Put a simple ":" up so the user knows that input is being accepted
+	fprintf(stderr, ":");
+	
 	//Main client code.  Loop forever.
 	while (IU_SUCKS)
 	{
 		//Set the read set equal to the master set
 		read = master;
-		fprintf(stderr, ":");
+		
 		//Use multiplexing to select the correct fd
 		if (select(fdmax + 1, &read, NULL, NULL, NULL) == -1)
 		{
-			perror("Error with select");
-			exit(5);
+			perror("Select");
+			exit(5); //TODO: return vals
 		}
 		
 		//If the STDIN fd is active, read from the user
