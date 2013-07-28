@@ -20,6 +20,6 @@
 #define NUM_TCP_KEEPINTVL 10
 
 /* Set up TCP Keepalive */
-void keepalive(int *listen_fd);
+void keepalive(int *listen_fd, int output_on);
 
 #endif
