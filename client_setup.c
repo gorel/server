@@ -29,8 +29,7 @@ char *get_name(void)
 /* Resolve the listener */
 void get_addr_info(const char *HOSTNAME, const char *PORT, struct addrinfo *hints, struct addrinfo **addrs)
 {
-	int err;
-	if ((err = getaddrinfo(HOSTNAME, PORT, hints, addrs)) != 0)
+	if (getaddrinfo(HOSTNAME, PORT, hints, addrs) != 0)
 	{
 		perror("Error getting address info");
 		exit(2);
@@ -55,7 +54,53 @@ void establish_connection(int *new_fd, struct addrinfo *addrs)
     }
     
     //Set up TCP Keepalive
-    keepalive(new_fd);
+    keepalive(new_fd, 0);
+}
+
+/* Receive the initial message from the server and output it to console */
+void receive_initial_message(int server_fd)
+{
+    int num_bytes;
+    char msg[MAXLEN];
+    
+	//Receive the server's initial message
+	if ((num_bytes = recv(server_fd, msg, MAXLEN - 1, 0)) == -1)
+	{
+		perror("Receive");
+		exit(1); //TODO: fix return vals
+	}
+    
+    //Ensure the JSON string is null terminated
+    msg[num_bytes] = '\0';
+    
+    //If any bytes were received, parse the message and output the information
+    if (num_bytes > 0)
+    {
+    	//Use cJSON to parse the message we received
+        cJSON  *recvJSON = cJSON_Parse(msg);
+        
+        //Find the sender of the data received
+        char *from = cJSON_GetObjectItem(recvJSON, "from")->valuestring;
+        //Find the message length of the data received
+        int mlen = cJSON_GetObjectItem(recvJSON, "mlen")->valueint;
+        //Find the actual message of the data received
+        char *msg = cJSON_GetObjectItem(recvJSON, "msg")->valuestring;
+        //Ensure the message is null terminated
+        msg[mlen] = '\0';
+        
+        //Print out the message being sent
+        if (!strcmp(from, "SERVER"))
+        	printf("%s\n", msg);
+        else
+	        printf("%s: %s\n", from, msg);
+                
+        cJSON_Delete(recvJSON);
+    }
+    //If no bytes were received in the initial message, there is a connection error
+    else
+    {
+    	error("Cannot receive messages from server.", 1); //TODO: return vals
+    }
 }
 
 /* Create an extra thread to output when a new message is received
@@ -77,7 +122,10 @@ void *receive(void *thread_data)
     {
     	//Receive the next message
     	if ((num_bytes = recv(server_fd, msg, MAXLEN - 1, 0)) == -1)
+    	{
     		perror("Receive");
+    		exit(1); //TODO: fix return vals
+    	}
         
         //Ensure the JSON string is null terminated
         msg[num_bytes] = '\0';

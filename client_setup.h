@@ -32,6 +32,9 @@ void get_addr_info(const char *HOSTNAME, const char *PORT, struct addrinfo *hint
 /* Establish the socket and connect to the host */
 void establish_connection(int *new_fd, struct addrinfo *addrs);
 
+/* Receive the initial message from the server and output it to console */
+void receive_initial_message(int server_fd);
+
 /* Create an extra thread to output when a new message is received
  * This allows the user to send messages and receive them in real time
  * instead of having an awkward "all-at-once" kind of connection

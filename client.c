@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
 	FD_SET(server_fd, &master);
 	FD_SET(STDIN_FILENO, &master);
 	
-	//Find the initial fdmax
+	//Find the fdmax
 	if (server_fd > STDIN_FILENO)
 		fdmax = server_fd;
 	else
@@ -42,6 +42,9 @@ int main(int argc, char *argv[])
 
 	//Send the initial message to the server
 	send_initial_message(server_fd, name);
+	printf("!");
+	//Get the server's response here
+	receive_initial_message(server_fd);
 	
 	//Tell the user they have connected to the chat server
 	printf("You are now connected to the chat server.  Say hello!\n");
@@ -61,7 +64,7 @@ int main(int argc, char *argv[])
 	{
 		//Set the read set equal to the master set
 		read = master;
-		
+		fprintf(stderr, ":");
 		//Use multiplexing to select the correct fd
 		if (select(fdmax + 1, &read, NULL, NULL, NULL) == -1)
 		{
