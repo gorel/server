@@ -17,7 +17,6 @@ int main(int argc, char *argv[])
 	struct addrinfo *addrs;					//Linked list of addresses
 	struct sockaddr_storage new_address;	//Address of a user that has not been seen until now
 	struct user *users = NULL;				//List of users currently connected
-	//struct user *userptr;					//Iterator to traverse over the user list
 	fd_set master, read;					//Used to monitor all users to create a multiplexed server
 		
 	//Display the host information
@@ -110,7 +109,7 @@ int main(int argc, char *argv[])
                     
                     //Find out which user sent the message
                     struct user *sender = get_user(users, i);
-                    
+                    //TODO: HERE!
                     //Handle the message sent
                     handle_message(&users, sender, recvJSON, &master);
                     

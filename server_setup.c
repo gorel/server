@@ -172,9 +172,8 @@ void handle_message(struct user **users, struct user *sender, struct cJSON *recv
     // If the user has not been initialized yet, fill in the user's data
     if (sender->name == NULL)
     {
-    	char *name = cJSON_GetObjectItem(recvJSON, "from")->valuestring;	
+    	char *name = cJSON_GetObjectItem(recvJSON, "from")->valuestring;
 		initialize_user(sender, name, *users);
-		
 		return;
     }
     
@@ -284,7 +283,7 @@ void initialize_user(struct user *new_user, char *name, struct user *users)
 	cJSON *sendJSON = cJSON_CreateObject();
 	
 	//Properly set the new user's name
-	new_user->name = name;
+	new_user->name = strdup(name);
 	
 	//Send help text to the new user
 	send_help_text(new_user);
