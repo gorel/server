@@ -66,7 +66,7 @@ void establish_socket(struct addrinfo *addrs, int *listen_fd)
 	}
 	
 	//Set up TCP Keepalive
-	keepalive(listen_fd);
+	keepalive(listen_fd, 0);
 	
 	//If iter is NULL, there was a failure to bind to any address
 	if (iter == NULL)
@@ -175,8 +175,6 @@ void handle_message(struct user **users, struct user *sender, struct cJSON *recv
     	char *name = cJSON_GetObjectItem(recvJSON, "from")->valuestring;	
 		initialize_user(sender, name, *users);
 		
-		//Print the user join message to the server
-		printf("%s has joined the chat server.\n", name);
 		return;
     }
     
@@ -365,6 +363,9 @@ void send_to_all(struct user *users, char *send_msg, struct user *sender)
 				exit(1); //TODO: Return vals
 			}
 		}
+		
+		//Increment the iterator
+		iter = iter->next;
 	}
 }
 
