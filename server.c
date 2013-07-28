@@ -1,4 +1,4 @@
-#include "server_setup.h"
+#include "server_setup.h"	
 
 int main(int argc, char *argv[])
 {
@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
                     
                     //Find out which user sent the message
                     struct user *sender = get_user(users, i);
-                    //TODO: HERE!
+                    
                     //Handle the message sent
                     handle_message(&users, sender, recvJSON, &master);
                     

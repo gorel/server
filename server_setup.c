@@ -311,7 +311,7 @@ void initialize_user(struct user *new_user, char *name, struct user *users)
 /* Send a list of currently connected users to the given user */
 void send_who_list(struct user *all_users, struct user *requester)
 {
-    char whotext[MAXMSG];
+    char whotext[MAXMSG] = "Active users: ";
     struct user *temp = all_users;
     
     //Create a cJSON object to hold the information
@@ -332,6 +332,7 @@ void send_who_list(struct user *all_users, struct user *requester)
 	    strcat(whotext, temp->name);
     
     //Fill in the JSON data
+    cJSON_AddStringToObject(sendJSON, "from", "SERVER");
     cJSON_AddNumberToObject(sendJSON, "mlen", strlen(whotext));
     cJSON_AddStringToObject(sendJSON, "msg", whotext);
     
