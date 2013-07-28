@@ -188,7 +188,7 @@ int send_new_message(int server_fd)
 	cJSON *sendJSON = cJSON_CreateObject();
 	
 	//Put a simple ":" up so the user knows that input is being accepted
-	printf(":");
+	fprintf(stderr, ":");
 	
 	//Read a message in from the user
 	if ((num_bytes = read(STDIN_FILENO, msg, MAXMSG - 1)) < 0)
