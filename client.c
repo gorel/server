@@ -59,9 +59,6 @@ int main(int argc, char *argv[])
 	//Start the receiver thread
 	pthread_create(&receiverThread, NULL, receive, (void *)args);
 	
-	//Put a simple ":" up so the user knows that input is being accepted
-	fprintf(stderr, ":");
-	
 	//Main client code.  Loop forever.
 	while (IU_SUCKS)
 	{
