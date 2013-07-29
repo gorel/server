@@ -112,6 +112,7 @@ void add_user(int fd, struct sockaddr_storage *address, struct user **users)
     
     //Set the default information for this new user
     temp->fd = fd;
+    temp->name = NULL;
     temp->addr = *((struct sockaddr *)address);
     temp->next = NULL;
     
@@ -218,9 +219,12 @@ void handle_message(struct user **users, struct user *sender, struct cJSON *recv
     
     // Print the user's chat to the server's console
     printf("%s: %s\n", sender->name, msg);
-                                    
+    
+    //Get the string representation of the JSON object
+    char *send_msg = cJSON_Print(recvJSON);
+    
     // Send message to other users
-    send_to_all(*users, msg, sender);
+    send_to_all(*users, send_msg, sender);
 }
 
 /* Generate text saying that the given user has left the chat room */
@@ -239,6 +243,7 @@ char *generate_user_left_message(struct user *sender)
     sprintf(leaveText, "%s has left the chat.", sender->name);
     
     //Fill in the JSON data
+    cJSON_AddStringToObject(sendJSON, "from", "SERVER");
     cJSON_AddNumberToObject(sendJSON, "mlen", strlen(leaveText));
     cJSON_AddStringToObject(sendJSON, "msg", leaveText);
     
@@ -259,7 +264,7 @@ void send_help_text(struct user *user)
 	cJSON *sendJSON = cJSON_CreateObject();
 	
 	//The standard help text
-	static char *helptext = "Type !quit to exit the chat.\nType !who to get a list of users.\nType !help to display this message again.\n";
+	static char *helptext = "\nType !quit to exit the chat.\nType !who to get a list of users.\nType !help to display this message again.\n";
     
     //Fill in the JSON data
     cJSON_AddNumberToObject(sendJSON, "mlen", strlen(helptext));
@@ -298,6 +303,7 @@ void initialize_user(struct user *new_user, char *name, struct user *users)
 	printf("%s\n", welcome_msg);
 	
 	//Add the data to the sendJSON
+	cJSON_AddStringToObject(sendJSON, "from", "SERVER");
 	cJSON_AddNumberToObject(sendJSON, "mlen", strlen(welcome_msg));
 	cJSON_AddStringToObject(sendJSON, "msg", welcome_msg);
 	
@@ -348,7 +354,7 @@ void send_who_list(struct user *all_users, struct user *requester)
 
 /* Send a message to all users except for the user who initially sent the message */
 void send_to_all(struct user *users, char *send_msg, struct user *sender)
-{	
+{
 	//Iterate through the users list
 	struct user *iter = users;
 	while (iter != NULL)
@@ -381,7 +387,9 @@ void remove_user(struct user **users, struct user *user_to_remove)
 {
 	//If the user is at the head of the users linked list, update it accordingly
 	if (*users == user_to_remove)
+	{
 		*users = user_to_remove->next;
+	}
 	else
 	{
 		//Otherwise, iteratively go through the users list to remove the user
@@ -395,5 +403,6 @@ void remove_user(struct user **users, struct user *user_to_remove)
 	
 	//Close the fd pointing to the removed user and free the memory
 	close(user_to_remove->fd);
-	free(user_to_remove);	
+	free(user_to_remove);
+	free(user_to_remove->name);
 }
