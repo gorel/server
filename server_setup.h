@@ -3,6 +3,7 @@
 
 #include "keepalive.h"
 #include "cJSON.h"
+#include "return_vals.h"
 
 #define MAX_WAIT 10
 #define MAXLEN 1024
@@ -30,6 +31,9 @@ void resolve_listener(const char *PORT, struct addrinfo *hints, struct addrinfo 
 
 /* Establish the server's socket */
 void establish_socket(struct addrinfo *addrs, int *listen_fd);
+
+/* Start the server listening on the given fd */
+void listen_on_fd(int *listen_fd);
 
 /* Accept a new user and return the file descriptor pointing to their connection */
 int accept_new_user(int listen_fd, struct sockaddr_storage *new_address);

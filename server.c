@@ -4,7 +4,7 @@ int main(int argc, char *argv[])
 {
 	//If the user did not specify a port number, exit
 	if (argc != 2)
-		error("Usage: ./server <port>", 1);
+		error("Usage: ./server <port>", INCORRECT_ARG_COUNT);
 
 	//The port is the first command line argument
 	const char *PORT = argv[1];
@@ -41,11 +41,7 @@ int main(int argc, char *argv[])
 	establish_socket(addrs, &listen_fd);
 	
 	//Make the server start listening on the port
-	if (listen(listen_fd, MAX_WAIT) == -1)
-	{
-		perror("Listen");
-		return 5;
-	}
+	listen_on_fd(&listen_fd);
 		
 	//Free addrs
 	freeaddrinfo(addrs);
@@ -69,7 +65,7 @@ int main(int argc, char *argv[])
 		if (select(fdmax + 1, &read, NULL, NULL, NULL) == -1)
 		{
 			perror("Select");
-			return 6;
+			exit(ERROR_WITH_SELECT);
 		}
 		
 		//Find out which client sent the message
@@ -98,7 +94,7 @@ int main(int argc, char *argv[])
 					 if ((num_bytes = recv(i, msg, MAXLEN - 1, 0)) == -1)
 					 {
                             perror("Receive");
-                            exit(1); //TODO: Return vals
+                            exit(ERROR_WITH_RECV);
                      }
                             
                     //Make sure the message is null-terminated
@@ -119,4 +115,5 @@ int main(int argc, char *argv[])
 			}//sockfd found
 		}//for
 	}//while
+	return 0;
 }//main

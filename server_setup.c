@@ -21,11 +21,10 @@ void displayhostinfo(const char *PORT)
 /* Resolve the listener */
 void resolve_listener(const char *PORT, struct addrinfo *hints, struct addrinfo **addrs)
 {
-	int err;
-	if ((err = getaddrinfo(NULL, PORT, hints, addrs)) != 0)
+	if (getaddrinfo(NULL, PORT, hints, addrs) != 0)
 	{
 		perror("Resolve listener");
-		exit(1); //TODO: return vals
+		exit(ERROR_RESOLVING_LISTENER);
 	}
 }
 
@@ -42,7 +41,8 @@ void establish_socket(struct addrinfo *addrs, int *listen_fd)
 	{
 		if ((*listen_fd = socket(addrs->ai_family, addrs->ai_socktype, addrs->ai_protocol)) == -1)
 		{
-			error("Error establishing socket", 3);
+			perror("Socket");
+			exit(ERROR_WITH_SOCKET);
 		}
 		else
 		{
@@ -50,14 +50,14 @@ void establish_socket(struct addrinfo *addrs, int *listen_fd)
 			if (setsockopt(*listen_fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1)
 			{
 				perror("Reusable socket");
-				exit(1); //TODO: Fix return vals
+				exit(ERROR_SETSOCKOPT);
 			}
 			
 			//Bind the socket to the specified port
 			if (bind(*listen_fd, iter->ai_addr, iter->ai_addrlen) < 0)
 			{
 				perror("Bind");
-				exit(1); //TODO: Fix return vals
+				exit(ERROR_WITH_BIND);
 			}
 			
 			//Socket binding setup successful.  Exit the loop.
@@ -72,9 +72,19 @@ void establish_socket(struct addrinfo *addrs, int *listen_fd)
 	if (iter == NULL)
 	{
 		perror("Bind");
-		exit(1); //TODO: return vals
+		exit(ERROR_WITH_BIND);
 	}
 			
+}
+
+/* Start the server listening on the given fd */
+void listen_on_fd(int *listen_fd)
+{
+	if (listen(*listen_fd, MAX_WAIT) == -1)
+	{
+		perror("Listen");
+		exit(1); //TODO: return vals
+	}
 }
 
 /* Accept a new user and return the file descriptor pointing to their connection */
@@ -181,6 +191,13 @@ void handle_message(struct user **users, struct user *sender, struct cJSON *recv
     // Find out what message the user sent
     char *msg = cJSON_GetObjectItem(recvJSON, "msg")->valuestring;
     
+	//If the message is blank, don't allow it to be sent
+	if (msg[0] == '\0')
+	{
+		printf("Bad input!\n");
+		return;
+	}
+    
     // If the user typed !quit, the user has left.
     if (!strcmp("!quit", msg))
     {
@@ -222,7 +239,7 @@ void handle_message(struct user **users, struct user *sender, struct cJSON *recv
     
     //Get the string representation of the JSON object
     char *send_msg = cJSON_Print(recvJSON);
-    
+	
     // Send message to other users
     send_to_all(*users, send_msg, sender);
 }
