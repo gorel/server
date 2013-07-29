@@ -1,0 +1,13 @@
+==URGENT==
+
+==QUICK==
+Fix return values to be more descriptive
+Don't allow blank messages to be sent
+
+==MEDIUM==
+Set up user authentication
+Make sure usernames are unique
+
+==LONG==
+Instead of console-based, create a GUI
+Encrypt communication for secure chat
