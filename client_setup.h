@@ -16,8 +16,7 @@
 
 struct thread_data
 {
-	int fd;	//the fd 
-	
+	int fd;	//the fd
 };
 
 /* Print out the given error message and exit the program with the given error code */
@@ -45,6 +44,6 @@ void *receive(void *thread_data);
 void send_initial_message(int server_fd, char *name);
 
 /* Wait for the user to input text then send it to the server */
-int send_new_message(int server_fd);
+int send_new_message(int server_fd, char *name);
 
 #endif

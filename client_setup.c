@@ -99,7 +99,7 @@ void receive_initial_message(int server_fd)
     //If no bytes were received in the initial message, there is a connection error
     else
     {
-    	error("Cannot receive messages from server.", 1); //TODO: return vals
+    	error("Connection error: No response from server.", 1); //TODO: return vals
     }
 }
 
@@ -179,7 +179,7 @@ void send_initial_message(int server_fd, char *name)
 }
 
 /* Wait for the user to input text then send it to the server */
-int send_new_message(int server_fd)
+int send_new_message(int server_fd, char *name)
 {
 	int num_bytes;
 	char msg[MAXMSG];
@@ -195,6 +195,7 @@ int send_new_message(int server_fd)
 	msg[num_bytes - 1] = '\0';
 	
 	//Add the message and message length to the JSON object
+	cJSON_AddStringToObject(sendJSON, "from", name);
 	cJSON_AddNumberToObject(sendJSON, "mlen", num_bytes - 1);
 	cJSON_AddStringToObject(sendJSON, "msg", (char *)msg);
 	

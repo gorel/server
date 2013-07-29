@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
 		if (FD_ISSET(STDIN_FILENO, &read))
 		{
 			// Send a message to the server -- if the user chose to quit, break out of the loop
-			if (send_new_message(server_fd) == QUIT_OPTION)
+			if (send_new_message(server_fd, name) == QUIT_OPTION)
 				break;
 		}
 	}
