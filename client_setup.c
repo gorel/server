@@ -31,8 +31,8 @@ void get_addr_info(const char *HOSTNAME, const char *PORT, struct addrinfo *hint
 {
 	if (getaddrinfo(HOSTNAME, PORT, hints, addrs) != 0)
 	{
-		perror("Error getting address info");
-		exit(2);
+		perror("Resolve listener");
+		exit(ERROR_RESOLVING_LISTENER);
 	}
 }
 
@@ -42,15 +42,15 @@ void establish_connection(int *new_fd, struct addrinfo *addrs)
 	//Establish the socket
 	if ((*new_fd = socket(addrs->ai_family, addrs->ai_socktype, addrs->ai_protocol)) == -1)
     {
-            perror("Error establishing socket");
-            exit(3);
+            perror("Socket");
+            exit(ERROR_WITH_SOCKET);
     }
     
     //Connect to the host
     if (connect(*new_fd, addrs->ai_addr, addrs->ai_addrlen) == -1)
     {
-            perror("Error connecting to host");
-            exit(4);
+            perror("Connect");
+            exit(ERROR_WITH_CONNECT);
     }
     
     //Set up TCP Keepalive
@@ -67,7 +67,7 @@ void receive_initial_message(int server_fd)
 	if ((num_bytes = recv(server_fd, msg, MAXLEN - 1, 0)) == -1)
 	{
 		perror("Receive");
-		exit(1); //TODO: fix return vals
+		exit(ERROR_WITH_RECV);
 	}
     
     //Ensure the JSON string is null terminated
@@ -99,7 +99,7 @@ void receive_initial_message(int server_fd)
     //If no bytes were received in the initial message, there is a connection error
     else
     {
-    	error("Connection error: No response from server.", 1); //TODO: return vals
+    	error("Connection error: No response from server.", EMPTY_RESPONSE_FROM_SERVER);
     }
 }
 
@@ -124,7 +124,7 @@ void *receive(void *thread_data)
     	if ((num_bytes = recv(server_fd, msg, MAXLEN - 1, 0)) == -1)
     	{
     		perror("Receive");
-    		exit(1); //TODO: fix return vals
+    		exit(ERROR_WITH_RECV);
     	}
         
         //Ensure the JSON string is null terminated
@@ -172,7 +172,10 @@ void send_initial_message(int server_fd, char *name)
 	
 	//Send the message to the server
 	if ((send(server_fd, send_msg, strlen(send_msg), 0)) == -1)
+	{
 		perror("Send");
+		exit(ERROR_WITH_SEND);
+	}
 		
 	//Delete the cJSON Object
 	cJSON_Delete(sendJSON);
@@ -189,7 +192,14 @@ int send_new_message(int server_fd, char *name)
 	
 	//Read a message in from the user
 	if ((num_bytes = read(STDIN_FILENO, msg, MAXMSG - 1)) < 0)
+	{
 		perror("Read");
+		exit(ERROR_WITH_READ);
+	}
+	
+	//Don't allow a message that is just a newline to be sent (return 0 because this isn't an error, though)
+	if (msg[0] == '\n')
+		return 0;
 	
 	//Null-terminate the message (and remove the trailing newline character)
 	msg[num_bytes - 1] = '\0';
@@ -204,7 +214,10 @@ int send_new_message(int server_fd, char *name)
 	
 	//Send the message to the server
 	if ((send(server_fd, send_msg, strlen(send_msg), 0)) == -1)
+	{
 		perror("Send");
+		exit(ERROR_WITH_SEND);
+	}
 		
 	//Delete the cJSON Object
 	cJSON_Delete(sendJSON);

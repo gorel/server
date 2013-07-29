@@ -4,6 +4,7 @@
 #include "keepalive.h"
 #include <pthread.h>
 #include "cJSON.h"
+#include "return_vals.h"
 
 
 #define IU_SUCKS 1

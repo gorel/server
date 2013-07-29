@@ -4,7 +4,7 @@ int main(int argc, char *argv[])
 {
 	//If the user did not specify a hostname and port number, exit
 	if (argc != 3)
-		error("Usage: ./client <hostname> <port>", 1);
+		error("Usage: ./client <hostname> <port>", INCORRECT_ARG_COUNT);
 		
 	int server_fd, fdmax;	//The server's fd and the maximum of the fd_set
 	fd_set master, read;	//Used to monitor all users to create a multiplexed server
@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
 		if (select(fdmax + 1, &read, NULL, NULL, NULL) == -1)
 		{
 			perror("Select");
-			exit(5); //TODO: return vals
+			exit(ERROR_WITH_SELECT);
 		}
 		
 		//If the STDIN fd is active, read from the user
