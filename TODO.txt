@@ -1,6 +1,7 @@
 ==URGENT==
 
 ==QUICK==
+[Both] Allow sending private messages to a single user (ex. !tell <user> <private message>)
 
 ==MEDIUM==
 [Server] Create new threads for send_to_all (sending would take too long for many concurrent users)
