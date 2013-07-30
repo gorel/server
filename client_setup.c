@@ -1,13 +1,6 @@
 #include "client_setup.h"
 #include <stdio.h>
 
-/* Print out the given error message and exit the program with the given error code */
-void error(char *message, int err_code)
-{
-	fprintf(stderr, "%s\n", message);
-	exit(err_code);
-}
-
 /* Get the user's name */
 char *get_name(void)
 {
@@ -58,7 +51,7 @@ void establish_connection(int *new_fd, struct addrinfo *addrs)
 }
 
 /* Receive the initial message from the server and output it to console */
-void receive_initial_message(int server_fd)
+bool receive_initial_message(int server_fd)
 {
     int num_bytes;
     char msg[MAXLEN];
@@ -79,27 +72,28 @@ void receive_initial_message(int server_fd)
     	//Use cJSON to parse the message we received
         cJSON  *recvJSON = cJSON_Parse(msg);
         
-        //Find the sender of the data received
-        char *from = cJSON_GetObjectItem(recvJSON, "from")->valuestring;
-        //Find the message length of the data received
+        //Extract the JSON data
         int mlen = cJSON_GetObjectItem(recvJSON, "mlen")->valueint;
-        //Find the actual message of the data received
         char *msg = cJSON_GetObjectItem(recvJSON, "msg")->valuestring;
+        bool valid = cJSON_GetObjectItem(recvJSON, "valid")->valueint;
+        
         //Ensure the message is null terminated
         msg[mlen] = '\0';
         
         //Print out the message being sent
-        if (!strcmp(from, "SERVER"))
-        	printf("%s\n", msg);
-        else
-	        printf("%s: %s\n", from, msg);
+        printf("%s\n", msg);
                 
         cJSON_Delete(recvJSON);
+        
+        //Return whether or not the username was valid
+        return valid;
     }
     //If no bytes were received in the initial message, there is a connection error
     else
     {
-    	error("Connection error: No response from server.", EMPTY_RESPONSE_FROM_SERVER);
+    	fprintf(stderr, "Connection error: No response from server.\n");
+    	exit(EMPTY_RESPONSE_FROM_SERVER);
+    	return EMPTY_RESPONSE_FROM_SERVER;
     }
 }
 

@@ -4,8 +4,13 @@ int main(int argc, char *argv[])
 {
 	//If the user did not specify a hostname and port number, exit
 	if (argc != 3)
-		error("Usage: ./client <hostname> <port>", INCORRECT_ARG_COUNT);
-		
+	{
+		fprintf(stderr, "Usage: ./client <hostname> <port>\n");
+		return INCORRECT_ARG_COUNT;
+	}
+	
+	bool valid = FALSE;		//Whether or not the chosen username was valid
+	char *name = NULL;		//The user's desired username
 	int server_fd, fdmax;	//The server's fd and the maximum of the fd_set
 	fd_set master, read;	//Used to monitor all users to create a multiplexed server
 	struct addrinfo hints;	//Desired socket properties
@@ -36,15 +41,19 @@ int main(int argc, char *argv[])
 		fdmax = server_fd;
 	else
 		fdmax = STDIN_FILENO;
-		
-	//Get the user's name
-	char *name = get_name();
-
-	//Send the initial message to the server
-	send_initial_message(server_fd, name);
 	
-	//Get the server's response here
-	receive_initial_message(server_fd);
+	//While the username isn't valid, keep getting a new name
+	while(!valid)
+	{
+		//Get the user's name
+		name = get_name();
+
+		//Send the initial message to the server
+		send_initial_message(server_fd, name);
+
+		//Get the server's response here and find out if the username is valid
+		valid = receive_initial_message(server_fd);
+	}
 	
 	//Tell the user they have connected to the chat server
 	printf("You are now connected to the chat server.  Say hello!\n");

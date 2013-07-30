@@ -1,13 +1,6 @@
 #include "server_setup.h"
 #include <stdio.h>
 
-/* Print out the given error message and exit the program with the given error code */
-void error(char *message, int err_code)
-{
-	fprintf(stderr, "%s\n", message);
-	exit(err_code);
-}
-
 /* Output the server's hostname to standard output */
 void displayhostinfo(const char *PORT)
 {
@@ -184,7 +177,14 @@ void handle_message(struct user **users, struct user *sender, struct cJSON *recv
     if (sender->name == NULL)
     {
     	char *name = cJSON_GetObjectItem(recvJSON, "from")->valuestring;
-		initialize_user(sender, name, *users);
+    	
+    	//If that username is already in use, tell the user
+    	if (username_already_in_use(*users, name))
+    		send_invalid_username_message(sender);
+    	//Otherwise, initialize the user with that name
+    	else
+    		initialize_user(sender, name, *users);
+    	
 		return;
     }
     
@@ -193,10 +193,7 @@ void handle_message(struct user **users, struct user *sender, struct cJSON *recv
     
 	//If the message is blank, don't allow it to be sent
 	if (msg[0] == '\0')
-	{
-		printf("Bad input!\n");
 		return;
-	}
     
     // If the user typed !quit, the user has left.
     if (!strcmp("!quit", msg))
@@ -287,6 +284,7 @@ void send_help_text(struct user *user)
     cJSON_AddNumberToObject(sendJSON, "mlen", strlen(helptext));
     cJSON_AddStringToObject(sendJSON, "msg", helptext);
     cJSON_AddStringToObject(sendJSON, "from", "SERVER");
+    cJSON_AddNumberToObject(sendJSON, "valid", TRUE);
     
     //Get the JSON data in string format
     char *send_msg = cJSON_Print(sendJSON);
@@ -329,6 +327,50 @@ void initialize_user(struct user *new_user, char *name, struct user *users)
 	
 	//Send the welcome message to all users
 	send_to_all(users, send_msg, new_user);
+}
+
+/* Find out if a given username is already in use in the linked list of users */
+bool username_already_in_use(struct user *users, char *name)
+{
+	struct user *iter = users;
+	
+	//Iterate through the linked list
+	while (iter != NULL)
+	{
+		//If the username is already in use, return TRUE
+		if (iter->name != NULL && !strcmp(iter->name, name))
+			return TRUE;
+		
+		//Increment the pointer
+		iter = iter->next;
+	}
+	
+	//If the username was never found, return FALSE
+	return FALSE;
+}
+
+/* Tell the given user that the username they have chosen is already in use on the server */
+void send_invalid_username_message(struct user *user)
+{
+	//Create a cJSON object to send a message to all clients
+	cJSON *sendJSON = cJSON_CreateObject();
+    
+    char *msg = "Sorry, that username is already in use.";
+    
+    //Fill in the JSON data
+    cJSON_AddStringToObject(sendJSON, "from", "SERVER");
+    cJSON_AddNumberToObject(sendJSON, "mlen", strlen(msg));
+    cJSON_AddStringToObject(sendJSON, "msg", msg);
+    cJSON_AddNumberToObject(sendJSON, "valid", FALSE);
+    
+    //Find the string representation of the JSON object
+    char *send_msg = cJSON_Print(sendJSON);
+    
+    //Send the message to the user
+    send_to_user(send_msg, user);
+    
+    //Delete the JSON object
+    cJSON_Delete(sendJSON);
 }
 
 /* Send a list of currently connected users to the given user */

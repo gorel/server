@@ -11,6 +11,11 @@
 
 #define EARTH_IS_THIRD_PLANET_FROM_THE_SUN 1
 
+#define TRUE 1
+#define FALSE 0
+
+typedef char bool;
+
 struct user
 {
 	int fd;
@@ -55,6 +60,12 @@ void send_help_text(struct user *user);
 
 /* Initialize the new user's information and send a message that the user has entered the chat room */
 void initialize_user(struct user *new_user, char *name, struct user *users);
+
+/* Find out if a given username is already in use in the linked list of users */
+bool username_already_in_use(struct user *users, char *name);
+
+/* Tell the given user that the username they have chosen is already in use on the server */
+void send_invalid_username_message(struct user *user);
 
 /* Send a list of currently connected users to the given user */
 void send_who_list(struct user *all_users, struct user *requester);

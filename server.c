@@ -4,7 +4,10 @@ int main(int argc, char *argv[])
 {
 	//If the user did not specify a port number, exit
 	if (argc != 2)
-		error("Usage: ./server <port>", INCORRECT_ARG_COUNT);
+	{
+		fprintf(stderr, "Usage: ./server <port>\n");
+		return INCORRECT_ARG_COUNT;
+	}
 
 	//The port is the first command line argument
 	const char *PORT = argv[1];

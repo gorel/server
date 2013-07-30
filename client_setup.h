@@ -15,6 +15,11 @@
 
 #define QUIT_OPTION 1
 
+#define TRUE 1
+#define FALSE 0
+
+typedef char bool;
+
 struct thread_data
 {
 	int fd;	//the fd
@@ -33,7 +38,7 @@ void get_addr_info(const char *HOSTNAME, const char *PORT, struct addrinfo *hint
 void establish_connection(int *new_fd, struct addrinfo *addrs);
 
 /* Receive the initial message from the server and output it to console */
-void receive_initial_message(int server_fd);
+bool receive_initial_message(int server_fd);
 
 /* Create an extra thread to output when a new message is received
  * This allows the user to send messages and receive them in real time
