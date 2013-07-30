@@ -1,9 +1,9 @@
 #ifndef CLIENT_SETUP_H
 #define CLIENT_SETUP_H
 
-#include "keepalive.h"
 #include <pthread.h>
 #include "cJSON.h"
+#include "keepalive.h"
 #include "return_vals.h"
 
 

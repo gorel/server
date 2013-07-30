@@ -1,8 +1,8 @@
 #ifndef SERVER_SETUP_H
 #define SERVER_SETUP_H
 
-#include "keepalive.h"
 #include "cJSON.h"
+#include "keepalive.h"
 #include "return_vals.h"
 
 #define MAX_WAIT 10
