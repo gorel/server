@@ -22,7 +22,7 @@ typedef char bool;
 
 struct thread_data
 {
-	int fd;	//the fd
+	int fd;	//the fd to listen on
 };
 
 /* Print out the given error message and exit the program with the given error code */
