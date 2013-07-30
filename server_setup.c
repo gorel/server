@@ -85,19 +85,11 @@ int accept_new_user(int listen_fd, struct sockaddr_storage *new_address)
 {
 	int new_fd;
 	socklen_t addrLen = sizeof new_address;
-	char ipv4[INET_ADDRSTRLEN];	
 	
 	//Accept the new connection
 	if ((new_fd = accept(listen_fd, (struct sockaddr *)new_address, &addrLen)) == -1)
 	{
 		    perror("Accept");
-		    exit(1); //TODO: return vals
-	}
-
-	//Find the string representation of the given socket address
-	if (inet_ntop(AF_INET, &(((struct sockaddr_in *)&new_address)->sin_addr), ipv4, INET_ADDRSTRLEN) == NULL)
-	{
-		    perror("Network to printable");
 		    exit(1); //TODO: return vals
 	}
 	
@@ -116,7 +108,6 @@ void add_user(int fd, struct sockaddr_storage *address, struct user **users)
     //Set the default information for this new user
     temp->fd = fd;
     temp->name = NULL;
-    temp->addr = *((struct sockaddr *)address);
     temp->next = NULL;
     
     //If this is the first user being added, the head will be NULL, so account for that
@@ -151,9 +142,6 @@ struct user *get_user(struct user *users, int fd)
 /* Handle the message that was received */
 void handle_message(struct user **users, struct user *sender, struct cJSON *recvJSON, fd_set *master)
 {
-	//This char array will hold the ipv4 printable version of the user's IP
-	char ipv4[INET_ADDRSTRLEN];
-
 	//If recvJSON is null, the user has quit unexpectedly
 	if (recvJSON == NULL)
     {
@@ -223,13 +211,6 @@ void handle_message(struct user **users, struct user *sender, struct cJSON *recv
     	send_help_text(sender);
     	return;
     }
-    
-    // Default case; user sent a message which needs relayed to other users.
-    if (inet_ntop(AF_INET, &(((struct sockaddr_in *)&(sender->addr))->sin_addr), ipv4, INET_ADDRSTRLEN) == NULL)
-    {
-            perror("Network to printable");
-            exit(1); //TODO: Return vals
-	}
     
     // Print the user's chat to the server's console
     printf("%s: %s\n", sender->name, msg);

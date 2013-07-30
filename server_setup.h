@@ -20,7 +20,6 @@ struct user
 {
 	int fd;
 	char *name;
-	struct sockaddr addr;
 	
 	struct user *next;
 };
