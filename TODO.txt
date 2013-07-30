@@ -3,10 +3,9 @@
 ==QUICK==
 
 ==MEDIUM==
-[Both] Set up user authentication
-[Server] Make sure usernames are unique
 [Server] Create new threads for send_to_all (sending would take too long for many concurrent users)
 
 ==LONG==
+[Both] Set up user authentication
 [Both] Instead of console-based, create a GUI
 [Both] Encrypt communication for secure chat
