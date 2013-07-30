@@ -23,6 +23,7 @@ int main(int argc, char *argv[])
 	//Zero out the addrinfo hints
 	memset(&hints, 0, sizeof(hints));
 	
+	//Set up the hints for the connection
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
 	
