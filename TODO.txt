@@ -7,7 +7,6 @@
 [Server] Create new threads for send_to_all (sending would take too long for many concurrent users) <-- msg would need to be copied to nontemporary memory or be overwritten
 
 ==LONG==
-[BOTH] Separate setup from messaging functions (break the server/client_setup libraries into two separate ones)
 [Both] Set up user authentication
 [Both] Instead of console-based, create a GUI
 [Both] Encrypt communication for secure chat
