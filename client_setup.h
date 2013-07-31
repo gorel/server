@@ -2,8 +2,8 @@
 #define CLIENT_SETUP_H
 
 #include <pthread.h>
-#include "cJSON.h"
 #include "keepalive.h"
+#include "cJSON.h"
 #include "return_vals.h"
 
 

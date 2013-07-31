@@ -1,8 +1,8 @@
 #ifndef SERVER_SETUP_H
 #define SERVER_SETUP_H
 
-#include "cJSON.h"
 #include "keepalive.h"
+#include "cJSON.h"
 #include "return_vals.h"
 
 #define MAX_WAIT 10
@@ -46,7 +46,10 @@ int accept_new_user(int listen_fd, struct sockaddr_storage *new_address);
 void add_user(int fd, struct sockaddr_storage *address, struct user **users);
 
 /* Find the user associated with the given fd */
-struct user *get_user(struct user *users, int fd);
+struct user *get_user_by_fd(struct user *users, int fd);
+
+/* Find the user associated with the given name */
+struct user *get_user_by_name(struct user *users, char *name);
 
 /* Handle the message that was received */
 void handle_message(struct user **users, struct user *sender, struct cJSON *recvJSON, fd_set *master);
@@ -71,6 +74,12 @@ void send_who_list(struct user *all_users, struct user *requester);
 
 /* Send a message to all users except for the user who initially sent the message */
 void send_to_all(struct user *users, char *send_msg, struct user *sender);
+
+/* Send a private message to the given user */
+void send_private_message(char *from, char *msg, struct user *user);
+
+/* Tell the given user that the name they supplied could not be found within the list of active users */
+void send_user_not_found_message(struct user *from);
 
 /* Send a message to the specified user */
 void send_to_user(char *send_msg, struct user *user);

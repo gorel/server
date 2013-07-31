@@ -107,7 +107,7 @@ int main(int argc, char *argv[])
                     cJSON *recvJSON = cJSON_Parse(msg);
                     
                     //Find out which user sent the message
-                    struct user *sender = get_user(users, i);
+                    struct user *sender = get_user_by_fd(users, i);
                     
                     //Handle the message sent
                     handle_message(&users, sender, recvJSON, &master);

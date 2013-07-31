@@ -130,21 +130,24 @@ void *receive(void *thread_data)
         	//Use cJSON to parse the message we received
             cJSON  *recvJSON = cJSON_Parse(msg);
             
-            //Find the sender of the data received
+            //Extract the JSON data
             char *from = cJSON_GetObjectItem(recvJSON, "from")->valuestring;
-            //Find the message length of the data received
             int mlen = cJSON_GetObjectItem(recvJSON, "mlen")->valueint;
-            //Find the actual message of the data received
             char *msg = cJSON_GetObjectItem(recvJSON, "msg")->valuestring;
+            bool private = cJSON_GetObjectItem(recvJSON, "private")->valueint;
+            
             //Ensure the message is null terminated
             msg[mlen] = '\0';
             
             //Print out the message being sent
             if (!strcmp(from, "SERVER"))
             	printf("%s\n", msg);
-            else
-		        printf("%s: %s\n", from, msg);
+            else if (private)
+            	printf("%s whispers: %s\n", from, msg);
+           	else
+           		printf("%s: %s\n", from, msg);
                     
+            //Free the JSON object
             cJSON_Delete(recvJSON);
         }
     }
