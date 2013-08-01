@@ -1,3 +1,5 @@
+#include "keepalive.h"
+#include "client_utils.h"
 #include "client_messaging.h"
 
 int main(int argc, char *argv[])

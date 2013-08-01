@@ -1,6 +1,9 @@
 ==URGENT==
+[Server]	If a user is muted, tell them they're muted and don't let the message go through
+[Client]	After a user receives a "you are kicked" message, the client does not exit
 
 ==QUICK==
+[Server]	Don't allow admins to mute or kick other admins
 
 ==MEDIUM==
 [Server]	Add admin functionality (make temp admin, mute user, unmute user, kick user)

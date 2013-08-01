@@ -2,13 +2,10 @@
 #define SERVER_MESSAGING_H
 
 #include "server_utils.h"
-
-
-/* Handle the message that was received */
-void handle_message(struct user **users, struct user *sender, struct cJSON *recvJSON, fd_set *master);
+#include "admin.h"
 
 /* Generate text saying that the given user has left the chat room */
-char *generate_user_left_message(struct user *sender);
+void send_user_left_message(struct user *users, struct user *sender);
 
 /* Send help text to the given user */
 void send_help_text(struct user *user);
@@ -24,6 +21,9 @@ void send_who_list(struct user *all_users, struct user *requester);
 
 /* Send a message to all users except for the user who initially sent the message */
 void send_to_all(struct user *users, char *send_msg, struct user *sender);
+
+/* Send a list of currently connected admins to the given user */
+void send_admin_list(struct user *all_users, struct user *requester);
 
 /* Send a private message to the given user */
 void send_private_message(char *from, char *msg, struct user *user);

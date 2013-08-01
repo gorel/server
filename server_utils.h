@@ -20,6 +20,8 @@ struct user
 {
 	int fd;
 	char *name;
+	bool admin;
+	bool muted;
 	
 	struct user *next;
 };

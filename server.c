@@ -1,4 +1,9 @@
-#include "server_messaging.h"	
+#include "keepalive.h"
+#include "return_vals.h"
+#include "server_utils.h"
+#include "server_messaging.h"
+#include "admin.h"
+#include "handle_message.h"
 
 int main(int argc, char *argv[])
 {

@@ -142,6 +142,10 @@ struct user *get_user_by_fd(struct user *users, int fd)
 /* Find the user associated with the given name -- may return NULL if user with that name not found */
 struct user *get_user_by_name(struct user *users, char *name)
 {
+	//If the name is NULL, don't even bother checking
+	if (name == NULL)
+		return NULL;
+
 	struct user *iter = users;
 	
 	//Iterate through the user list to find who is associated with the given name
@@ -194,6 +198,6 @@ void remove_user(struct user **users, struct user *user_to_remove)
 	
 	//Close the fd pointing to the removed user and free the memory
 	close(user_to_remove->fd);
-	free(user_to_remove);
 	free(user_to_remove->name);
+	free(user_to_remove);
 }
