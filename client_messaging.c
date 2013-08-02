@@ -89,13 +89,13 @@ void *receive(void *thread_data)
         {        
         	//Use cJSON to parse the message we received
             cJSON  *recvJSON = cJSON_Parse(msg);
-            bool kicked = FALSE;
             
             //Extract the JSON data
             char *from = cJSON_GetObjectItem(recvJSON, "from")->valuestring;
             int mlen = cJSON_GetObjectItem(recvJSON, "mlen")->valueint;
             char *msg = cJSON_GetObjectItem(recvJSON, "msg")->valuestring;
             bool private = cJSON_GetObjectItem(recvJSON, "private")->valueint;
+            bool kicked = FALSE;
             
             //Only checked for the "kicked" signal if the sender was the server (Why would you trust any random client to tell you that you've been kicked?)
             if (!strcmp(from, "SERVER"))
@@ -135,14 +135,8 @@ void *receive(void *thread_data)
 /* Send initial data to the server */
 void send_initial_message(int server_fd, char *name)
 {
-	//Create the cJSON object which will be sent
-	cJSON *sendJSON = cJSON_CreateObject();
-	
-	//Add the user's name to the JSON object
-	cJSON_AddStringToObject(sendJSON, "from", name);
-	
-	//Print out the JSON object to string
-	char *send_msg = cJSON_Print(sendJSON);
+	//Get a JSON-formatted string
+    char *send_msg = allocate_json_string(name, "\0", TRUE, FALSE, FALSE);
 	
 	//Send the message to the server
 	if ((send(server_fd, send_msg, strlen(send_msg), 0)) == -1)
@@ -151,8 +145,7 @@ void send_initial_message(int server_fd, char *name)
 		exit(ERROR_WITH_SEND);
 	}
 		
-	//Delete the cJSON Object and free send_msg
-	cJSON_Delete(sendJSON);
+	//Free send_msg
 	free(send_msg);
 }
 
@@ -160,10 +153,8 @@ void send_initial_message(int server_fd, char *name)
 int send_new_message(int server_fd, char *name)
 {
 	int num_bytes;
+	bool private = FALSE;
 	char msg[MAXMSG];
-	
-	//Create the cJSON object which will be sent
-	cJSON *sendJSON = cJSON_CreateObject();
 	
 	//Read a message in from the user
 	if ((num_bytes = read(STDIN_FILENO, msg, MAXMSG - 1)) < 0)
@@ -179,13 +170,12 @@ int send_new_message(int server_fd, char *name)
 	//Null-terminate the message (and remove the trailing newline character)
 	msg[num_bytes - 1] = '\0';
 	
-	//Add the message and message length to the JSON object
-	cJSON_AddStringToObject(sendJSON, "from", name);
-	cJSON_AddNumberToObject(sendJSON, "mlen", num_bytes - 1);
-	cJSON_AddStringToObject(sendJSON, "msg", (char *)msg);
+	//If the user is sending a private message, mark the message as private
+	if (!strcmp("!tell ", msg))
+		private = TRUE;
 	
-	//Print out the JSON object to string
-	char *send_msg = cJSON_Print(sendJSON);	
+    //Get a JSON-formatted string
+    char *send_msg = allocate_json_string(name, (char *)msg, TRUE, private, FALSE);
 	
 	//Send the message to the server
 	if ((send(server_fd, send_msg, strlen(send_msg), 0)) == -1)
@@ -194,8 +184,7 @@ int send_new_message(int server_fd, char *name)
 		exit(ERROR_WITH_SEND);
 	}
 		
-	//Delete the cJSON Object and free send_msg
-	cJSON_Delete(sendJSON);
+	//Free send_msg
 	free(send_msg);
 	
 	//If the user chose to quit, return QUIT_OPTION

@@ -1,4 +1,4 @@
-#include "keepalive.h"
+#include "generic_utils.h"
 
 /* Set up TCP Keepalive */
 void keepalive(int *listen_fd, int output_on)
@@ -45,4 +45,26 @@ void keepalive(int *listen_fd, int output_on)
 	
 	if (output_on)
 		printf("<K> TCP_KEEPIDLE is %s\n", (optval ? "ON" : "OFF" ));
+}
+
+/* Allocate a JSON string with the given data */
+char *allocate_json_string(char *from, char *msg, bool valid, bool private, bool kicked)
+{
+	//Create a cJSON object to organize the data
+	cJSON *json = cJSON_CreateObject();
+    
+    //Fill in the JSON data
+    cJSON_AddStringToObject(json, "from", from);
+    cJSON_AddNumberToObject(json, "mlen", strlen(msg));
+    cJSON_AddStringToObject(json, "msg", msg);
+    cJSON_AddNumberToObject(json, "valid", valid);
+    cJSON_AddNumberToObject(json, "private", private);
+    cJSON_AddNumberToObject(json, "kicked", kicked);
+    
+    //Get the JSON data in string format
+    char *json_string = cJSON_Print(json);
+    
+    //Delete the cJSON object and return msg
+    cJSON_Delete(json);
+    return json_string;
 }

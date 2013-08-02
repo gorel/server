@@ -2,8 +2,10 @@
 #include "admin.h"
 
 /* Handle the message that was received */
-void handle_message(struct user **users, struct user *sender, struct cJSON *recvJSON, fd_set *master)
+void handle_message(struct user **users, struct user *sender, char *recv_msg, fd_set *master)
 {
+	cJSON *recvJSON = cJSON_Parse(recv_msg);
+
 	//If recvJSON is null, the user has quit unexpectedly
 	if (recvJSON == NULL)
     {
@@ -201,16 +203,10 @@ void handle_message(struct user **users, struct user *sender, struct cJSON *recv
     
     // Print the user's chat to the server's console
     printf("%s: %s\n", sender->name, msg);
-    
-    //The message is not private, so add this to the JSON object
-    cJSON_AddNumberToObject(recvJSON, "private", FALSE);
-    
-    //Get the string representation of the JSON object
-    char *send_msg = cJSON_Print(recvJSON);
 	
     // Send message to other users
-    send_to_all(*users, send_msg, sender);
+    send_to_all(*users, recv_msg, sender);
     
-    //Free send_msg
-    free(send_msg);
+    //Delete the recvJSON object
+    cJSON_Delete(recvJSON);
 }

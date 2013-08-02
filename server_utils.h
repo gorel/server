@@ -1,7 +1,7 @@
 #ifndef SERVER_UTILS_H
 #define SERVER_UTILS_H
 
-#include "keepalive.h"
+#include "generic_utils.h"
 #include "cJSON.h"
 #include "return_vals.h"
 

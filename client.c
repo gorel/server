@@ -1,4 +1,4 @@
-#include "keepalive.h"
+#include "generic_utils.h"
 #include "client_utils.h"
 #include "client_messaging.h"
 
@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
 	struct addrinfo hints;	//Desired socket properties
 	struct addrinfo *addrs;	//Linked list of addresses
 	
-	sem_t exit_signal;			//Semaphore to show when the thread should exit
+	sem_t exit_signal;		//Semaphore to show when the thread should exit
 	
 	//Zero out the fd_sets
 	FD_ZERO(&master);

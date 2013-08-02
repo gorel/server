@@ -86,27 +86,19 @@ void send_admin_help_text(struct user *user)
 {
 	if (user->admin)
 	{
-		//Create a cJSON object to hold the data
-		cJSON *sendJSON = cJSON_CreateObject();
-	
 		//The standard admin help text
-		static char *helptext = "\nType !promote <user> to give <user> admin privileges\nType !mute <user> to mute the given user\nType !unmute <user> to unmute the given user\nType !kick <user> to kick the given user\n";
+		static char *help_text =	"\nType !promote <user> to give <user> admin privileges.\
+									 \nType !mute <user> to mute the given user.\
+									 \nType !unmute <user> to unmute the given user.\
+									 \nType !kick <user> to kick the given user.\n";
 		
-		//Fill in the JSON data
-		cJSON_AddNumberToObject(sendJSON, "mlen", strlen(helptext));
-		cJSON_AddStringToObject(sendJSON, "msg", helptext);
-		cJSON_AddStringToObject(sendJSON, "from", "SERVER");
-		cJSON_AddNumberToObject(sendJSON, "private", FALSE);
-    	cJSON_AddNumberToObject(sendJSON, "kicked", FALSE);
-		
-		//Get the JSON data in string format
-		char *send_msg = cJSON_Print(sendJSON);
+		//Get a JSON-formatted string
+		char *send_msg = allocate_json_string("SERVER", help_text, TRUE, FALSE, FALSE);
 		
 		//Send the help text to the user
 		send_to_user(send_msg, user);
 		
-		//Delete the cJSON object and the send_msg
-		cJSON_Delete(sendJSON);
+		//Free send_msg
 		free(send_msg);
 	}
 	//Otherwise, tell the user that they don't have privileges for that
@@ -142,9 +134,6 @@ void promote_to_admin(struct user *users, struct user *admin, struct user *user_
 /* Send a message to all users that a new admin has been added to the server */
 void send_new_admin_message(struct user *users, char *new_admin_name)
 {
-	//Create a cJSON object to store the data
-	cJSON *sendJSON = cJSON_CreateObject();
-	
 	//Allocate space for the kick message ("<name> being kicked for <reason>")
 	char admin_msg[strlen(new_admin_name) + strlen(" has been promoted to admin") + 1];
 
@@ -153,22 +142,14 @@ void send_new_admin_message(struct user *users, char *new_admin_name)
 
 	//Print to the server console that there is a new admin
 	printf("%s\n", admin_msg);
-
-	//Add the data to the sendJSON
-	cJSON_AddStringToObject(sendJSON, "from", "SERVER");
-	cJSON_AddNumberToObject(sendJSON, "mlen", strlen(admin_msg));
-	cJSON_AddStringToObject(sendJSON, "msg", admin_msg);
-	cJSON_AddNumberToObject(sendJSON, "private", FALSE);
-    cJSON_AddNumberToObject(sendJSON, "kicked", FALSE);
-
-	//Print the JSON object to a string
-	char *send_msg = cJSON_Print(sendJSON);
+	
+    //Get a JSON-formatted string
+    char *send_msg = allocate_json_string("SERVER", admin_msg, TRUE, FALSE, FALSE);
 	
 	//Send a message to all users that there is a new admin
 	send_to_all(users, send_msg, NULL);
 	
-	//Free the cJSON object and send_msg
-	cJSON_Delete(sendJSON);
+	//Free send_msg
 	free(send_msg);
 }
 
@@ -204,24 +185,14 @@ void mute(struct user *admin, struct user *user_to_mute)
 /* Send a message to the given user telling them they have been muted by the given admin */
 void send_mute_message(struct user *user, struct user *admin)
 {
-	//Create a cJSON object to hold the information
-    cJSON *sendJSON = cJSON_CreateObject();
-    
-    //Allocate space for the mute text
+	//Allocate space for the mute text
     char mute_text[strlen(admin->name) + strlen(" has muted you.") + 1];
     
     //Print the string to the mute text
     sprintf(mute_text, "%s has muted you.", admin->name);
     
-    //Fill in the JSON data
-    cJSON_AddStringToObject(sendJSON, "from", "SERVER");
-    cJSON_AddNumberToObject(sendJSON, "mlen", strlen(mute_text));
-    cJSON_AddStringToObject(sendJSON, "msg", mute_text);
-    cJSON_AddNumberToObject(sendJSON, "private", TRUE);
-    cJSON_AddNumberToObject(sendJSON, "kicked", FALSE);
-    
-    //Get the string representation of the JSON object
-    char *send_msg = cJSON_Print(sendJSON);
+    //Get a JSON-formatted string
+    char *send_msg = allocate_json_string("SERVER", mute_text, TRUE, FALSE, FALSE);
     
     //Print the message to the server's console
     printf("%s has muted %s.\n", admin->name, user->name);
@@ -229,8 +200,7 @@ void send_mute_message(struct user *user, struct user *admin)
     //Send the message to the specified user
    	send_to_user(send_msg, user);
    	
-   	//Delete the cJSON object and free send_msg
-   	cJSON_Delete(sendJSON);
+   	//Free send_msg
    	free(send_msg);
 }
 
@@ -258,24 +228,14 @@ void unmute(struct user *admin, struct user *user_to_unmute)
 /* Send a message to the given user telling them they have been unmuted by the given admin */
 void send_unmute_message(struct user *user, struct user *admin)
 {
-	//Create a cJSON object to hold the information
-    cJSON *sendJSON = cJSON_CreateObject();
-    
-    //Allocate space for the mute text
+	//Allocate space for the mute text
     char unmute_text[strlen(admin->name) + strlen(" has unmuted you.") + 1];
     
     //Print the string to the mute text
     sprintf(unmute_text, "%s has unmuted you.", admin->name);
     
-    //Fill in the JSON data
-    cJSON_AddStringToObject(sendJSON, "from", "SERVER");
-    cJSON_AddNumberToObject(sendJSON, "mlen", strlen(unmute_text));
-    cJSON_AddStringToObject(sendJSON, "msg", unmute_text);
-    cJSON_AddNumberToObject(sendJSON, "private", TRUE);
-    cJSON_AddNumberToObject(sendJSON, "kicked", FALSE);
-    
-    //Get the string representation of the JSON object
-    char *send_msg = cJSON_Print(sendJSON);
+    //Get a JSON-formatted string
+    char *send_msg = allocate_json_string("SERVER", unmute_text, TRUE, FALSE, FALSE);
     
     //Print the message to the server's console
     printf("%s has unmuted %s.\n", admin->name, user->name);
@@ -283,8 +243,7 @@ void send_unmute_message(struct user *user, struct user *admin)
     //Send the message to the specified user
    	send_to_user(send_msg, user);
    	
-   	//Delete the cJSON object and free send_msg
-   	cJSON_Delete(sendJSON);
+   	//Free send_msg
    	free(send_msg);
 }
 
@@ -308,9 +267,6 @@ void kick(struct user **users, fd_set *master, struct user *admin, struct user *
 			return;
 		}
 		
-		//Create a cJSON object to store the data
-		cJSON *sendJSON = cJSON_CreateObject();
-		
 		//Allocate space for the kick message ("<name> being kicked for <reason>")
 		char kick_msg[strlen(user_to_kick->name) + strlen(" has been kicked for ") + strlen(reason) + 1];
 
@@ -319,16 +275,9 @@ void kick(struct user **users, fd_set *master, struct user *admin, struct user *
 
 		//Print to the server console that a user has been kicked
 		printf("%s\n", kick_msg);
-
-		//Add the data to the sendJSON
-		cJSON_AddStringToObject(sendJSON, "from", "SERVER");
-		cJSON_AddNumberToObject(sendJSON, "mlen", strlen(kick_msg));
-		cJSON_AddStringToObject(sendJSON, "msg", kick_msg);
-		cJSON_AddNumberToObject(sendJSON, "private", FALSE);
-    	cJSON_AddNumberToObject(sendJSON, "kicked", FALSE);
-
-		//Print the JSON object to a string
-		char *send_msg = cJSON_Print(sendJSON);
+		
+		//Get a JSON-formatted string
+		char *send_msg = allocate_json_string("SERVER", kick_msg, TRUE, FALSE, FALSE);
 		
 		//Send a message to all users stating why user_to_kick is being removed
 		send_to_all(*users, send_msg, user_to_kick);
@@ -343,8 +292,7 @@ void kick(struct user **users, fd_set *master, struct user *admin, struct user *
         FD_CLR(user_to_kick->fd, master);
 		remove_user(users, user_to_kick);
 		
-		//Free the cJSON object and send_msg
-		cJSON_Delete(sendJSON);
+		//Free send_msg
 		free(send_msg);
 	}
 	//Otherwise, tell the user that they don't have privileges for that
@@ -355,83 +303,50 @@ void kick(struct user **users, fd_set *master, struct user *admin, struct user *
 /* Send a message to user telling them they are being kicked */
 void send_kick_message(struct user *user, char *reason)
 {
-	//Create a cJSON object to store the data
-	cJSON *sendJSON = cJSON_CreateObject();
-	
 	//Allocate space for the kick message ("You are being kicked for <reason>")
 	char kick_msg[strlen("You are being kicked for ") + strlen(reason) + 1];
 
 	//Print "<name> has been kicked for <reason>" to the kick_msg string
 	sprintf(kick_msg, "You are being kicked for %s", reason);
 
-	//Add the data to the sendJSON
-	cJSON_AddStringToObject(sendJSON, "from", "SERVER");
-	cJSON_AddNumberToObject(sendJSON, "mlen", strlen(kick_msg));
-	cJSON_AddStringToObject(sendJSON, "msg", kick_msg);
-	cJSON_AddNumberToObject(sendJSON, "private", FALSE);
-	cJSON_AddNumberToObject(sendJSON, "kicked", TRUE);
-
-	//Print the JSON object to a string
-	char *send_msg = cJSON_Print(sendJSON);
+    //Get a JSON-formatted string
+    char *send_msg = allocate_json_string("SERVER", kick_msg, TRUE, FALSE, TRUE);
 	
 	//Send a message to all users stating why user_to_kick is being removed
 	send_to_user(send_msg, user);
 	
-	//Free all allocated memory
-	cJSON_Delete(sendJSON);
+	//Free send_msg
 	free(send_msg);
 }
 
 /* Tell the specified user that they do not have admin privileges */
 void send_not_admin_message(struct user *user)
 {
-	//Create a cJSON object to store the data
-	cJSON *sendJSON = cJSON_CreateObject();
-	
 	//Define the error message ("Error: You must be an admin to do that.")
-	char *error_msg = "You must be an admin to do that.";
+	static char *error_msg = "You must be an admin to do that.";
 	
-	//Add the data to the sendJSON object
-	cJSON_AddStringToObject(sendJSON, "from", "SERVER");
-	cJSON_AddNumberToObject(sendJSON, "mlen", strlen(error_msg));
-	cJSON_AddStringToObject(sendJSON, "msg", error_msg);
-	cJSON_AddNumberToObject(sendJSON, "private", FALSE);
-    cJSON_AddNumberToObject(sendJSON, "kicked", FALSE);
-	
-	//Print the JSON object to a string
-	char *send_msg = cJSON_Print(sendJSON);
+    //Get a JSON-formatted string
+    char *send_msg = allocate_json_string("SERVER", error_msg, TRUE, FALSE, FALSE);
 	
 	//Send the error message to the user trying to do whatever is requiring admin privileges
 	send_to_user(send_msg, user);
 	
-	//Free the cJSON object and send_msg
-	cJSON_Delete(sendJSON);
+	//Free send_msg
 	free(send_msg);
 }
 
 /* Tell the specified admin that they are trying to mute/kick an admin, which is not allowed */
 void send_user_is_admin_message(struct user *user)
 {
-	//Create a cJSON object to store the data
-	cJSON *sendJSON = cJSON_CreateObject();
-	
 	//Define the error message ("Error: You must be an admin to do that.")
-	char *error_msg = "Error: You cannot mute or kick someone with admin privileges.";
+	static char *error_msg = "Error: You cannot mute or kick someone with admin privileges.";
 	
-	//Add the data to the sendJSON object
-	cJSON_AddStringToObject(sendJSON, "from", "SERVER");
-	cJSON_AddNumberToObject(sendJSON, "mlen", strlen(error_msg));
-	cJSON_AddStringToObject(sendJSON, "msg", error_msg);
-	cJSON_AddNumberToObject(sendJSON, "private", FALSE);
-    cJSON_AddNumberToObject(sendJSON, "kicked", FALSE);
-	
-	//Print the JSON object to a string
-	char *send_msg = cJSON_Print(sendJSON);
+    //Get a JSON-formatted string
+    char *send_msg = allocate_json_string("SERVER", error_msg, TRUE, FALSE, FALSE);
 	
 	//Send the error message to the user trying to do whatever is requiring admin privileges
 	send_to_user(send_msg, user);
 	
-	//Free the cJSON object and send_msg
-	cJSON_Delete(sendJSON);
+	//Free send_msg
 	free(send_msg);
 }

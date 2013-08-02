@@ -1,4 +1,4 @@
-#include "keepalive.h"
+#include "generic_utils.h"
 #include "return_vals.h"
 #include "server_utils.h"
 #include "server_messaging.h"
@@ -108,17 +108,11 @@ int main(int argc, char *argv[])
                     //Make sure the message is null-terminated
                     msg[num_bytes] = '\0';
                     
-                    //Parse the JSON message
-                    cJSON *recvJSON = cJSON_Parse(msg);
-                    
                     //Find out which user sent the message
                     struct user *sender = get_user_by_fd(users, i);
                     
                     //Handle the message sent
-                    handle_message(&users, sender, recvJSON, &master);
-                    
-                    //Delete the cJSON Object
-                    cJSON_Delete(recvJSON);
+                    handle_message(&users, sender, msg, &master);
 				}
 			}//sockfd found
 		}//for

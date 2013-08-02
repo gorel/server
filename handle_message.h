@@ -5,6 +5,6 @@
 #include "admin.h"
 
 /* Handle the message that was received */
-void handle_message(struct user **users, struct user *sender, struct cJSON *recvJSON, fd_set *master);
+void handle_message(struct user **users, struct user *sender, char *recv_msg, fd_set *master);
 
 #endif

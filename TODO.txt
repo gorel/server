@@ -4,6 +4,7 @@
 ==QUICK==
 
 ==MEDIUM==
+[Server]	Allow vote-kicking a user if there is no admin present (40% of online user? 51%?  What would be a good balance?)
 
 ==LONG==
 [Both]		Set up user authentication
@@ -12,6 +13,7 @@
 
 
 ==COMPLETED==
+[Both]		Create a function to create a default cJSON string from some given data
 [Client]	(BUG) After a user receives a "you are kicked" message, the client does not exit
 [Both]		Allow clients to !ignore users and not see private messages from them
 [Client]	Allow the client to set their AFK status
