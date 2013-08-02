@@ -32,6 +32,9 @@ void send_unmute_message(struct user *user, struct user *admin);
 /* Kick the given user out of the chat room (will check that admin has the correct privileges) */
 void kick(struct user **users, fd_set *master, struct user *admin, struct user *user_to_kick, char *reason);
 
+/* Send a message to user telling them they are being kicked */
+void send_kick_message(struct user *user, char *reason);
+
 /* Tell the specified user that they do not have admin privileges */
 void send_not_admin_message(struct user *user);
 

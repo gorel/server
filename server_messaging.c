@@ -20,6 +20,7 @@ void send_user_left_message(struct user *users, struct user *sender)
     cJSON_AddNumberToObject(sendJSON, "mlen", strlen(leaveText));
     cJSON_AddStringToObject(sendJSON, "msg", leaveText);
     cJSON_AddNumberToObject(sendJSON, "private", FALSE);
+    cJSON_AddNumberToObject(sendJSON, "kicked", FALSE);
     
     //Get the JSON data in string format
     char *send_msg = cJSON_Print(sendJSON);
@@ -55,6 +56,7 @@ void send_help_text(struct user *user)
     cJSON_AddStringToObject(sendJSON, "from", "SERVER");
     cJSON_AddNumberToObject(sendJSON, "valid", TRUE);		//Needed when sending the initial message
     cJSON_AddNumberToObject(sendJSON, "private", FALSE);
+    cJSON_AddNumberToObject(sendJSON, "kicked", FALSE);
     
     //Get the JSON data in string format
     char *send_msg = cJSON_Print(sendJSON);
@@ -86,6 +88,7 @@ void send_afk_status(struct user *user)
     cJSON_AddNumberToObject(sendJSON, "mlen", strlen(msg));
     cJSON_AddStringToObject(sendJSON, "msg", msg);
     cJSON_AddNumberToObject(sendJSON, "private", FALSE);
+    cJSON_AddNumberToObject(sendJSON, "kicked", FALSE);
     
     //Find the string representation of the JSON object
     char *send_msg = cJSON_Print(sendJSON);
@@ -142,6 +145,7 @@ void initialize_user(struct user *new_user, char *name, struct user *users)
 	cJSON_AddNumberToObject(sendJSON, "mlen", strlen(welcome_msg));
 	cJSON_AddStringToObject(sendJSON, "msg", welcome_msg);
     cJSON_AddNumberToObject(sendJSON, "private", FALSE);
+    cJSON_AddNumberToObject(sendJSON, "kicked", FALSE);
 	
 	//Print the JSON object to a string
 	char *send_msg = cJSON_Print(sendJSON);
@@ -168,6 +172,7 @@ void send_invalid_username_message(struct user *user)
     cJSON_AddStringToObject(sendJSON, "msg", msg);
     cJSON_AddNumberToObject(sendJSON, "valid", FALSE);
     cJSON_AddNumberToObject(sendJSON, "private", FALSE);
+    cJSON_AddNumberToObject(sendJSON, "kicked", FALSE);
     
     //Find the string representation of the JSON object
     char *send_msg = cJSON_Print(sendJSON);
@@ -208,6 +213,7 @@ void send_who_list(struct user *all_users, struct user *requester)
     cJSON_AddNumberToObject(sendJSON, "mlen", strlen(whotext));
     cJSON_AddStringToObject(sendJSON, "msg", whotext);
     cJSON_AddNumberToObject(sendJSON, "private", FALSE);
+    cJSON_AddNumberToObject(sendJSON, "kicked", FALSE);
     
     //Get the string representation of the JSON object
     char *send_msg = cJSON_Print(sendJSON);
@@ -258,6 +264,7 @@ void send_admin_list(struct user *all_users, struct user *requester)
     cJSON_AddNumberToObject(sendJSON, "mlen", strlen(whotext));
     cJSON_AddStringToObject(sendJSON, "msg", whotext);
     cJSON_AddNumberToObject(sendJSON, "private", FALSE);
+    cJSON_AddNumberToObject(sendJSON, "kicked", FALSE);
     
     //Get the string representation of the JSON object
     char *send_msg = cJSON_Print(sendJSON);
@@ -283,6 +290,7 @@ void send_afk_warning(struct user *user)
     cJSON_AddNumberToObject(sendJSON, "mlen", strlen(msg));
     cJSON_AddStringToObject(sendJSON, "msg", msg);
     cJSON_AddNumberToObject(sendJSON, "private", FALSE);
+    cJSON_AddNumberToObject(sendJSON, "kicked", FALSE);
     
     //Get the string representation of the JSON object
     char *send_msg = cJSON_Print(sendJSON);
@@ -306,6 +314,7 @@ void send_private_message(char *from, char *msg, struct user *user)
     cJSON_AddNumberToObject(sendJSON, "mlen", strlen(msg));
     cJSON_AddStringToObject(sendJSON, "msg", msg);
     cJSON_AddNumberToObject(sendJSON, "private", TRUE);
+    cJSON_AddNumberToObject(sendJSON, "kicked", FALSE);
     
     //Get the string representation of the JSON object
     char *send_msg = cJSON_Print(sendJSON);
@@ -334,6 +343,7 @@ void send_you_are_muted_message(struct user *user)
     cJSON_AddNumberToObject(sendJSON, "mlen", strlen(muted_msg));
     cJSON_AddStringToObject(sendJSON, "msg", muted_msg);
     cJSON_AddNumberToObject(sendJSON, "private", TRUE);
+    cJSON_AddNumberToObject(sendJSON, "kicked", FALSE);
     
     //Get the string representation of the JSON object
     char *send_msg = cJSON_Print(sendJSON);
@@ -382,6 +392,7 @@ void send_user_not_found_message(struct user *from)
     cJSON_AddNumberToObject(sendJSON, "mlen", strlen(msg));
     cJSON_AddStringToObject(sendJSON, "msg", msg);
     cJSON_AddNumberToObject(sendJSON, "private", FALSE);
+    cJSON_AddNumberToObject(sendJSON, "kicked", FALSE);
     
     //Get the string representation of the JSON object
     char *send_msg = cJSON_Print(sendJSON);
@@ -418,6 +429,7 @@ void send_ignore_message(struct user *user, char *ignoring)
     cJSON_AddNumberToObject(sendJSON, "mlen", strlen(msg));
     cJSON_AddStringToObject(sendJSON, "msg", msg);
     cJSON_AddNumberToObject(sendJSON, "private", FALSE);
+    cJSON_AddNumberToObject(sendJSON, "kicked", FALSE);
     
     //Find the string representation of the JSON object
     char *send_msg = cJSON_Print(sendJSON);
@@ -447,6 +459,7 @@ void send_unignore_message(struct user *user, char *unignoring)
     cJSON_AddNumberToObject(sendJSON, "mlen", strlen(msg));
     cJSON_AddStringToObject(sendJSON, "msg", msg);
     cJSON_AddNumberToObject(sendJSON, "private", FALSE);
+    cJSON_AddNumberToObject(sendJSON, "kicked", FALSE);
     
     //Find the string representation of the JSON object
     char *send_msg = cJSON_Print(sendJSON);
@@ -476,6 +489,7 @@ void send_you_are_ignored_message(struct user *user, char *ignorer_name)
     cJSON_AddNumberToObject(sendJSON, "mlen", strlen(msg));
     cJSON_AddStringToObject(sendJSON, "msg", msg);
     cJSON_AddNumberToObject(sendJSON, "private", FALSE);
+    cJSON_AddNumberToObject(sendJSON, "kicked", FALSE);
     
     //Find the string representation of the JSON object
     char *send_msg = cJSON_Print(sendJSON);

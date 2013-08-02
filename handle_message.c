@@ -34,7 +34,11 @@ void handle_message(struct user **users, struct user *sender, struct cJSON *recv
     }
     
     // Find out what message the user sent
+    int mlen = cJSON_GetObjectItem(recvJSON, "mlen")->valueint;
     char *msg = cJSON_GetObjectItem(recvJSON, "msg")->valuestring;
+    
+    //Ensure the message is null-terminated
+    msg[mlen] = '\0';
     
 	//If the message is blank, don't allow it to be sent
 	if (msg[0] == '\0')

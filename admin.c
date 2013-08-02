@@ -97,6 +97,7 @@ void send_admin_help_text(struct user *user)
 		cJSON_AddStringToObject(sendJSON, "msg", helptext);
 		cJSON_AddStringToObject(sendJSON, "from", "SERVER");
 		cJSON_AddNumberToObject(sendJSON, "private", FALSE);
+    	cJSON_AddNumberToObject(sendJSON, "kicked", FALSE);
 		
 		//Get the JSON data in string format
 		char *send_msg = cJSON_Print(sendJSON);
@@ -158,6 +159,7 @@ void send_new_admin_message(struct user *users, char *new_admin_name)
 	cJSON_AddNumberToObject(sendJSON, "mlen", strlen(admin_msg));
 	cJSON_AddStringToObject(sendJSON, "msg", admin_msg);
 	cJSON_AddNumberToObject(sendJSON, "private", FALSE);
+    cJSON_AddNumberToObject(sendJSON, "kicked", FALSE);
 
 	//Print the JSON object to a string
 	char *send_msg = cJSON_Print(sendJSON);
@@ -216,6 +218,7 @@ void send_mute_message(struct user *user, struct user *admin)
     cJSON_AddNumberToObject(sendJSON, "mlen", strlen(mute_text));
     cJSON_AddStringToObject(sendJSON, "msg", mute_text);
     cJSON_AddNumberToObject(sendJSON, "private", TRUE);
+    cJSON_AddNumberToObject(sendJSON, "kicked", FALSE);
     
     //Get the string representation of the JSON object
     char *send_msg = cJSON_Print(sendJSON);
@@ -269,6 +272,7 @@ void send_unmute_message(struct user *user, struct user *admin)
     cJSON_AddNumberToObject(sendJSON, "mlen", strlen(unmute_text));
     cJSON_AddStringToObject(sendJSON, "msg", unmute_text);
     cJSON_AddNumberToObject(sendJSON, "private", TRUE);
+    cJSON_AddNumberToObject(sendJSON, "kicked", FALSE);
     
     //Get the string representation of the JSON object
     char *send_msg = cJSON_Print(sendJSON);
@@ -321,12 +325,16 @@ void kick(struct user **users, fd_set *master, struct user *admin, struct user *
 		cJSON_AddNumberToObject(sendJSON, "mlen", strlen(kick_msg));
 		cJSON_AddStringToObject(sendJSON, "msg", kick_msg);
 		cJSON_AddNumberToObject(sendJSON, "private", FALSE);
+    	cJSON_AddNumberToObject(sendJSON, "kicked", FALSE);
 
 		//Print the JSON object to a string
 		char *send_msg = cJSON_Print(sendJSON);
 		
 		//Send a message to all users stating why user_to_kick is being removed
-		send_to_all(*users, send_msg, NULL);
+		send_to_all(*users, send_msg, user_to_kick);
+		
+		//Send a message to the user being kicked explaining why
+		send_kick_message(user_to_kick, reason);
 
 		//Tell everyone that the kicked user has left the chat		
 		send_user_left_message(*users, user_to_kick);
@@ -344,6 +352,36 @@ void kick(struct user **users, fd_set *master, struct user *admin, struct user *
 		send_not_admin_message(admin);
 }
 
+/* Send a message to user telling them they are being kicked */
+void send_kick_message(struct user *user, char *reason)
+{
+	//Create a cJSON object to store the data
+	cJSON *sendJSON = cJSON_CreateObject();
+	
+	//Allocate space for the kick message ("You are being kicked for <reason>")
+	char kick_msg[strlen("You are being kicked for ") + strlen(reason) + 1];
+
+	//Print "<name> has been kicked for <reason>" to the kick_msg string
+	sprintf(kick_msg, "You are being kicked for %s", reason);
+
+	//Add the data to the sendJSON
+	cJSON_AddStringToObject(sendJSON, "from", "SERVER");
+	cJSON_AddNumberToObject(sendJSON, "mlen", strlen(kick_msg));
+	cJSON_AddStringToObject(sendJSON, "msg", kick_msg);
+	cJSON_AddNumberToObject(sendJSON, "private", FALSE);
+	cJSON_AddNumberToObject(sendJSON, "kicked", TRUE);
+
+	//Print the JSON object to a string
+	char *send_msg = cJSON_Print(sendJSON);
+	
+	//Send a message to all users stating why user_to_kick is being removed
+	send_to_user(send_msg, user);
+	
+	//Free all allocated memory
+	cJSON_Delete(sendJSON);
+	free(send_msg);
+}
+
 /* Tell the specified user that they do not have admin privileges */
 void send_not_admin_message(struct user *user)
 {
@@ -358,6 +396,7 @@ void send_not_admin_message(struct user *user)
 	cJSON_AddNumberToObject(sendJSON, "mlen", strlen(error_msg));
 	cJSON_AddStringToObject(sendJSON, "msg", error_msg);
 	cJSON_AddNumberToObject(sendJSON, "private", FALSE);
+    cJSON_AddNumberToObject(sendJSON, "kicked", FALSE);
 	
 	//Print the JSON object to a string
 	char *send_msg = cJSON_Print(sendJSON);
@@ -384,6 +423,7 @@ void send_user_is_admin_message(struct user *user)
 	cJSON_AddNumberToObject(sendJSON, "mlen", strlen(error_msg));
 	cJSON_AddStringToObject(sendJSON, "msg", error_msg);
 	cJSON_AddNumberToObject(sendJSON, "private", FALSE);
+    cJSON_AddNumberToObject(sendJSON, "kicked", FALSE);
 	
 	//Print the JSON object to a string
 	char *send_msg = cJSON_Print(sendJSON);
