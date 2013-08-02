@@ -83,6 +83,7 @@ void handle_message(struct user **users, struct user *sender, struct cJSON *recv
     //The user wants to send a private message
     if (!strncmp("!tell ", msg, strlen("!tell ")))
     {
+    
     	//The target user to send the message to
     	struct user *target;
     	char *name;
@@ -97,6 +98,13 @@ void handle_message(struct user **users, struct user *sender, struct cJSON *recv
     	//If the user was found, send them the message
     	if (target != NULL)
     	{
+    		//If the user is currently muted and they aren't trying to talk to an admin, don't let the message go through
+    		if (sender->muted && !target->admin)
+    		{
+    			send_you_are_muted_message(sender);
+    			return;
+    		}
+    		
     		//Extract the rest of the message and send it to the target
     		msg = strtok(NULL, "\0");
     		send_private_message(sender->name, msg, target);
@@ -107,6 +115,13 @@ void handle_message(struct user **users, struct user *sender, struct cJSON *recv
     		
     	return;
     }
+    
+    //If the user is currently muted, don't let the message go through
+	if (sender->muted)
+	{
+		send_you_are_muted_message(sender);
+		return;
+	}
     
     // Print the user's chat to the server's console
     printf("%s: %s\n", sender->name, msg);
