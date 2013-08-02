@@ -1,4 +1,5 @@
 ==BUGS==
+[Server]	User is kicked without seeing the reason why
 
 ==QUICK==
 [Both]		Don't accept names that aren't just a single word (strtok could be helpful)
