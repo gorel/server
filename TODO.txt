@@ -1,5 +1,4 @@
 ==BUGS==
-[Client]	After a user receives a "you are kicked" message, the client does not exit
 
 ==QUICK==
 
@@ -12,6 +11,7 @@
 
 
 ==COMPLETED==
+[Client]	(BUG) After a user receives a "you are kicked" message, the client does not exit
 [Both]		Allow clients to !ignore users and not see private messages from them
 [Client]	Allow the client to set their AFK status
 [Client]	If a client receives a private message while status is "away," tell the sender
