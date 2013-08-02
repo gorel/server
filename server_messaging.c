@@ -39,7 +39,7 @@ void send_help_text(struct user *user)
 	cJSON *sendJSON = cJSON_CreateObject();
 	
 	//The standard help text
-	static char *helptext = "\nType !quit to exit the chat.\nType !who to get a list of users.\nType !tell <user> <message> to send a private message.\nType !help to display this message again.\nType !admins for a list of current admins online\n";
+	static char *helptext = "\nType !quit to exit the chat.\nType !who to get a list of users.\nType !tell <user> <message> to send a private message.\nType !help to display this message again.\nType !admins for a list of current admins online\nType !adminhelp for a list of admin commands\n";
     
     //Fill in the JSON data
     cJSON_AddNumberToObject(sendJSON, "mlen", strlen(helptext));
@@ -57,10 +57,6 @@ void send_help_text(struct user *user)
     //Delete the cJSON object and the send_msg
     cJSON_Delete(sendJSON);
     free(send_msg);
-    
-    //Additionally, if the user is an admin, send them the admin help text
-    if (user->admin)
-    	send_admin_help_text(user);
 }
 
 /* Initialize the new user's information and send a message that the user has entered the chat room */
@@ -81,6 +77,10 @@ void initialize_user(struct user *new_user, char *name, struct user *users)
 	
 	//Send help text to the new user
 	send_help_text(new_user);
+	
+	//If the user is an admin, send the admin help text
+	if (new_user->admin)
+		send_admin_help_text(new_user);
 	
 	//Allocate space for the welcome message ("<name> has joined the chat.")
 	char welcome_msg[strlen(name) + strlen("has joined the chat.") + 1];
@@ -241,6 +241,31 @@ void send_private_message(char *from, char *msg, struct user *user)
     
     //Print the message to the server's console
     printf("[Private] %s to %s: %s\n", from, user->name, msg);
+    
+    //Send the message to the specified user
+   	send_to_user(send_msg, user);
+   	
+   	//Delete the cJSON object and free send_msg
+   	cJSON_Delete(sendJSON);
+   	free(send_msg);
+}
+
+/* Send a message to the given user telling them that they are currently muted */
+void send_you_are_muted_message(struct user *user)
+{
+	//Create a cJSON object to hold the information
+    cJSON *sendJSON = cJSON_CreateObject();
+    
+    char *muted_msg = "Cannot send: you are currently muted.";
+    
+    //Fill in the JSON data
+    cJSON_AddStringToObject(sendJSON, "from", "SERVER");
+    cJSON_AddNumberToObject(sendJSON, "mlen", strlen(muted_msg));
+    cJSON_AddStringToObject(sendJSON, "msg", muted_msg);
+    cJSON_AddNumberToObject(sendJSON, "private", TRUE);
+    
+    //Get the string representation of the JSON object
+    char *send_msg = cJSON_Print(sendJSON);
     
     //Send the message to the specified user
    	send_to_user(send_msg, user);

@@ -28,6 +28,9 @@ void send_admin_list(struct user *all_users, struct user *requester);
 /* Send a private message to the given user */
 void send_private_message(char *from, char *msg, struct user *user);
 
+/* Send a message to the given user telling them that they are currently muted */
+void send_you_are_muted_message(struct user *user);
+
 /* Tell the given user that the name they supplied could not be found within the list of active users */
 void send_user_not_found_message(struct user *from);
 
