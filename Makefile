@@ -25,7 +25,7 @@ keepalive: keepalive.c
 
 
 client: client.c client_messaging
-	gcc client.c cJSON.c $(CFLAGS) -o client $(CLIB) -L. -lclient
+	gcc client.c cJSON.c $(CFLAGS) -o client $(CLIB) -lpthread -lrt -L. -lclient
 
 client_messaging: client_messaging.c client_utils keepalive
 	gcc -c $(CFLAGS) client_messaging.c 

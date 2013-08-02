@@ -60,10 +60,20 @@ void *receive(void *thread_data)
     
     //Parse the data from the arguments
     int server_fd = args->fd;
+    sem_t *exit_signal = args->exit_signal;
     
     //Loop forever to receive messages
     while (1)
     {
+    	int sem_val;
+    	
+    	//Get the current semaphore value and store it in sem_val
+		sem_getvalue(exit_signal, &sem_val);
+	
+		//If the semaphore has been decremented to 0, exit the while loop (main thread sent exit signal)
+		if (sem_val == 0)
+			break;
+    
     	//Receive the next message
     	if ((num_bytes = recv(server_fd, msg, MAXLEN - 1, 0)) == -1)
     	{
@@ -76,9 +86,10 @@ void *receive(void *thread_data)
         
         //If any bytes were received, parse the message and output the information
         if (num_bytes > 0)
-        {
+        {        
         	//Use cJSON to parse the message we received
             cJSON  *recvJSON = cJSON_Parse(msg);
+            bool kicked = FALSE;
             
             //Extract the JSON data
             char *from = cJSON_GetObjectItem(recvJSON, "from")->valuestring;
@@ -86,8 +97,23 @@ void *receive(void *thread_data)
             char *msg = cJSON_GetObjectItem(recvJSON, "msg")->valuestring;
             bool private = cJSON_GetObjectItem(recvJSON, "private")->valueint;
             
-            //Ensure the message is null terminated
+            //Only checked for the "kicked" signal if the sender was the server (Why would you trust any random client to tell you that you've been kicked?)
+            if (!strcmp(from, "SERVER"))
+            	kicked = cJSON_GetObjectItem(recvJSON, "kicked")->valueint;
+            
+            //Ensure that the msg is null terminated
             msg[mlen] = '\0';
+            
+            //If the user was kicked from the server, decrement the semaphore and break out of the while loop 
+            if (kicked)
+            {
+				//Free the recvJSON object
+				cJSON_Delete(recvJSON);
+			
+				//Decrement the semaphore to signal the receiver thread to end then break out of the while loop
+				sem_wait(exit_signal);
+				break;
+            }
             
             //Print out the message being sent
             if (!strcmp(from, "SERVER"))
@@ -100,9 +126,10 @@ void *receive(void *thread_data)
             //Free the JSON object
             cJSON_Delete(recvJSON);
         }
-    }
-    //Avoid compiler warnings by placing a return NULL statement at the end    
-    return NULL;
+    }    
+    
+    //Exit with normal status
+    pthread_exit(0);
 }
 
 /* Send initial data to the server */

@@ -12,5 +12,6 @@
 #define EMPTY_RESPONSE_FROM_SERVER	9
 #define ERROR_WITH_SEND				10
 #define ERROR_WITH_READ				11
+#define ERROR_SEM_INIT				12
 
 #endif

@@ -18,6 +18,8 @@ int main(int argc, char *argv[])
 	struct addrinfo hints;	//Desired socket properties
 	struct addrinfo *addrs;	//Linked list of addresses
 	
+	sem_t exit_signal;			//Semaphore to show when the thread should exit
+	
 	//Zero out the fd_sets
 	FD_ZERO(&master);
 	FD_ZERO(&read);
@@ -66,18 +68,37 @@ int main(int argc, char *argv[])
 	printf("You are now connected to the chat server.  Say hello!\n");
 	
 	//The thread that will receive messages
-	pthread_t receiverThread;
+	pthread_t receiver_thread;
+	
+	//Create a semaphore so the main thread and receiver thread can communicate that the other should quit (the program has ended)
+	if (sem_init(&exit_signal, 0, 1) != 0)
+	{
+		perror("Sem init");
+		exit(ERROR_SEM_INIT);
+	}
 	
 	//Allocate space for the information to pass into the pthread
 	struct thread_data *args = (struct thread_data *)malloc(sizeof(struct thread_data));
+	
+	//Fill in the args data
 	args->fd = server_fd;
+	args->exit_signal = &exit_signal;
 	
 	//Start the receiver thread
-	pthread_create(&receiverThread, NULL, receive, (void *)args);
+	pthread_create(&receiver_thread, NULL, receive, (void *)args);
 	
 	//Main client code.  Loop forever.
 	while (IU_SUCKS)
 	{
+		int sem_val;
+		
+		//Get the current semaphore value and store it in sem_val
+		sem_getvalue(&exit_signal, &sem_val);
+	
+		//If the semaphore has been decremented to 0, exit the while loop (receiver thread sent exit signal)
+		if (sem_val == 0)
+			break;
+	
 		//Set the read set equal to the master set
 		read = master;
 		
@@ -93,13 +114,22 @@ int main(int argc, char *argv[])
 		{
 			// Send a message to the server -- if the user chose to quit, break out of the loop
 			if (send_new_message(server_fd, name) == QUIT_OPTION)
+			{
+				//Decrement the semaphore to signal the receiver thread to end then break out of the while loop
+				sem_wait(&exit_signal);
 				break;
+			}
 		}
 	}
 	
-	//Free all allocated memory
+	//Wait for the receiving thread to terminate
+	pthread_join(receiver_thread, NULL);
+	
+	//Free all allocated memory and destroy the semaphore
 	free(name);
 	free(addrs);
+	free(args);
+	sem_destroy(&exit_signal);
 	
 	//Print that the program is exiting and return 0
 	printf("Exiting...\n");

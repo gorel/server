@@ -2,6 +2,7 @@
 #define CLIENT_UTILS_H
 
 #include <pthread.h>
+#include <semaphore.h>
 #include "keepalive.h"
 #include "cJSON.h"
 #include "return_vals.h"
@@ -22,7 +23,8 @@ typedef char bool;
 
 struct thread_data
 {
-	int fd;	//the fd to listen on
+	int fd;				//the fd to listen on
+	sem_t *exit_signal;	//A semaphore to signal the thread should end -- the signal may come from the receiver thread OR the main thread
 };
 
 /* Print out the given error message and exit the program with the given error code */
