@@ -1,13 +1,9 @@
-==URGENT==
-[Server]	If a user is muted, tell them they're muted and don't let the message go through
+==BUGS==
 [Client]	After a user receives a "you are kicked" message, the client does not exit
 
 ==QUICK==
-[Server]	Don't allow admins to mute or kick other admins
 
 ==MEDIUM==
-[Server]	Add admin functionality (make temp admin, mute user, unmute user, kick user)
-[Both]		Create a data structure representing a normal cJSON message
 [Server]	Create new threads for send_to_all (sending would take too long for many concurrent users) <-- msg would need to be copied to nontemporary memory
 
 ==LONG==
@@ -17,6 +13,8 @@
 
 
 ==COMPLETED==
+[Server]	Don't allow admins to mute or kick other admins
+[Server]	Add admin functionality (make temp admin, mute user, unmute user, kick user)
 [Both]		Fix return values to be more descriptive
 [Both]		Don't allow blank messages to be sent
 [Server]	Make sure usernames are unique
