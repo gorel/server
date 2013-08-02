@@ -8,22 +8,24 @@ Usage
 Running make will create everything needed for both the server and client applications.  If you just want to compile the server, use "make server."  Likewise, if you just want to compile the client, use "make client."
 
 ### Server
-./server <port number>
+./server  &lt;port number>
 
 ### Client
-./client <host> <port number>
+./client  &lt;host>  &lt;port number>
+
 
 Updates
 -------
 
-### (7/28/13)
+### (7/28/2013)
 Base functionality now complete.  This is a simple console-based chat server that supports multiple users with multiplexing.
 
-### (7/31/13)
+### (7/31/2013)
 A few new changes have been made to make the chat experience better for the user.  Private messaging is now available, blank messages won't be relayed to users, and usernames are now checked to ensure they are unique.  The code in server_setup and client_setup was also separated into *_utils and *_messaging to make relevant functions easier to find.
 
 ### (8/2/2013)
 Minor improvements have been made to the program.  There are now admin functions available for muting and kicking users (as well as promoting other users to admin level).  The programs were tested extensively with Valgrind to test for any possible memory leaks.  Valgrind now shows a perfect output with all heap blocks freed and no leaks possible.  An ignore feature was added to allow users to block all private messages from specified users.  The system allows each user to ignore up to a maximum of 20 concurrent users.
+
 
 What's Next
 -----------
