@@ -39,7 +39,15 @@ void send_help_text(struct user *user)
 	cJSON *sendJSON = cJSON_CreateObject();
 	
 	//The standard help text
-	static char *helptext = "\nType !quit to exit the chat.\nType !who to get a list of users.\nType !tell <user> <message> to send a private message.\nType !help to display this message again.\nType !admins for a list of current admins online\nType !adminhelp for a list of admin commands\n";
+	static char *helptext = "\n!admins :\t\t\tGet a list of currently online admins\
+							 \n!adminhelp :\t\t\tGet a list of admin commands (ADMIN ONLY)\
+							 \n!afk :\t\t\t\tSwitch your away from keyboard status\
+							 \n!ignore <user> :\t\tStop receiving private messages from <user>\
+							 \n!unignore <user> :\t\tAllow <user> to send you private messages\
+							 \n!tell <user> <message> :\tSend a private message to <user>\
+							 \n!who :\t\t\t\tGet a list of currently online users\
+							 \n!help :\t\t\t\tDisplay this information again\
+							 \n";
     
     //Fill in the JSON data
     cJSON_AddNumberToObject(sendJSON, "mlen", strlen(helptext));
@@ -59,14 +67,51 @@ void send_help_text(struct user *user)
     free(send_msg);
 }
 
+
+/* Send the user their current AFK status */
+void send_afk_status(struct user *user)
+{
+	//Create a cJSON object to send a message to all clients
+	cJSON *sendJSON = cJSON_CreateObject();
+    
+    char *msg;
+    
+    if (user->afk)
+    	msg = "You are now away from keyboard.";
+    else
+    	msg = "You are no longer away from keyboard.";
+    
+    //Fill in the JSON data
+    cJSON_AddStringToObject(sendJSON, "from", "SERVER");
+    cJSON_AddNumberToObject(sendJSON, "mlen", strlen(msg));
+    cJSON_AddStringToObject(sendJSON, "msg", msg);
+    cJSON_AddNumberToObject(sendJSON, "private", FALSE);
+    
+    //Find the string representation of the JSON object
+    char *send_msg = cJSON_Print(sendJSON);
+    
+    //Send the message to the user
+    send_to_user(send_msg, user);
+    
+    //Delete the JSON object and free send_msg
+    cJSON_Delete(sendJSON);
+    free(send_msg);
+}
+
 /* Initialize the new user's information and send a message that the user has entered the chat room */
 void initialize_user(struct user *new_user, char *name, struct user *users)
 {
+	int i;
+	
 	//Create a cJSON object to store the data
 	cJSON *sendJSON = cJSON_CreateObject();
 	
 	//Properly set the new user's name
 	new_user->name = strdup(name);
+	
+	//Make sure all entries in the user's ignore list are NULL
+	for (i = 0; i < MAXIGNORE; i++)
+		new_user->ignore_list[i] = NULL;
 	
 	//New users should not have admin privileges or be muted by default (unless the user is named ADMIN)
 	if (!strcmp("ADMIN", new_user->name))
@@ -74,6 +119,7 @@ void initialize_user(struct user *new_user, char *name, struct user *users)
 	else
 		new_user->admin = FALSE;
 	new_user->muted = FALSE;
+	new_user->afk = FALSE;
 	
 	//Send help text to the new user
 	send_help_text(new_user);
@@ -224,6 +270,31 @@ void send_admin_list(struct user *all_users, struct user *requester)
    	free(send_msg);
 }
 
+/* Warn a user that they tried to send a private message to a user listed as AFK */
+void send_afk_warning(struct user *user)
+{
+	//Create a cJSON object to hold the information
+    cJSON *sendJSON = cJSON_CreateObject();
+    
+    char *msg = "Warning: Target user is AFK.  They might not see your message.";
+    
+    //Fill in the JSON data
+    cJSON_AddStringToObject(sendJSON, "from", "SERVER");
+    cJSON_AddNumberToObject(sendJSON, "mlen", strlen(msg));
+    cJSON_AddStringToObject(sendJSON, "msg", msg);
+    cJSON_AddNumberToObject(sendJSON, "private", FALSE);
+    
+    //Get the string representation of the JSON object
+    char *send_msg = cJSON_Print(sendJSON);
+    
+    //Send the message to the specified user
+   	send_to_user(send_msg, user);
+   	
+   	//Delete the cJSON object and free send_msg
+   	cJSON_Delete(sendJSON);
+   	free(send_msg);
+}
+
 /* Send a private message to the given user */
 void send_private_message(char *from, char *msg, struct user *user)
 {
@@ -328,4 +399,91 @@ void send_to_user(char *send_msg, struct user *user)
 {
 	if (send(user->fd, send_msg, strlen(send_msg), 0) == -1)
 		perror("Send");
+}
+
+/* Send a message to the given user that they are now ignoring someone new */
+void send_ignore_message(struct user *user, char *ignoring)
+{
+	//Create a cJSON object to send a message to all clients
+	cJSON *sendJSON = cJSON_CreateObject();
+    
+    //Allocate space for the message
+    char msg[strlen("You are now ignoring ") + strlen(ignoring) + 1];
+    
+    //Print "You are no longer ignoring <user>" to the msg string
+    sprintf(msg, "You are now ignoring %s", ignoring);
+    
+    //Fill in the JSON data
+    cJSON_AddStringToObject(sendJSON, "from", "SERVER");
+    cJSON_AddNumberToObject(sendJSON, "mlen", strlen(msg));
+    cJSON_AddStringToObject(sendJSON, "msg", msg);
+    cJSON_AddNumberToObject(sendJSON, "private", FALSE);
+    
+    //Find the string representation of the JSON object
+    char *send_msg = cJSON_Print(sendJSON);
+    
+    //Send the message to the user
+    send_to_user(send_msg, user);
+    
+    //Delete the JSON object and free send_msg
+    cJSON_Delete(sendJSON);
+    free(send_msg);
+}
+
+/* Send a message to the given user that they are no longer ignoring the given target */
+void send_unignore_message(struct user *user, char *unignoring)
+{
+	//Create a cJSON object to send a message to all clients
+	cJSON *sendJSON = cJSON_CreateObject();
+    
+    //Allocate space for the message
+    char msg[strlen("You are no longer ignoring ") + strlen(unignoring) + 1];
+    
+    //Print "You are no longer ignoring <user>" to the msg string
+    sprintf(msg, "You are no longer ignoring %s", unignoring);
+    
+    //Fill in the JSON data
+    cJSON_AddStringToObject(sendJSON, "from", "SERVER");
+    cJSON_AddNumberToObject(sendJSON, "mlen", strlen(msg));
+    cJSON_AddStringToObject(sendJSON, "msg", msg);
+    cJSON_AddNumberToObject(sendJSON, "private", FALSE);
+    
+    //Find the string representation of the JSON object
+    char *send_msg = cJSON_Print(sendJSON);
+    
+    //Send the message to the user
+    send_to_user(send_msg, user);
+    
+    //Delete the JSON object and free send_msg
+    cJSON_Delete(sendJSON);
+    free(send_msg);
+}
+
+/* Send a message to the given user that they are being ignored */
+void send_you_are_ignored_message(struct user *user, char *ignorer_name)
+{
+	//Create a cJSON object to send a message to all clients
+	cJSON *sendJSON = cJSON_CreateObject();
+    
+    //Allocate space for the message
+    char msg[strlen(ignorer_name) + strlen(" is ignoring you") + 1];
+    
+    //Print "You are no longer ignoring <user>" to the msg string
+    sprintf(msg, "%s is ignoring you", ignorer_name);
+    
+    //Fill in the JSON data
+    cJSON_AddStringToObject(sendJSON, "from", "SERVER");
+    cJSON_AddNumberToObject(sendJSON, "mlen", strlen(msg));
+    cJSON_AddStringToObject(sendJSON, "msg", msg);
+    cJSON_AddNumberToObject(sendJSON, "private", FALSE);
+    
+    //Find the string representation of the JSON object
+    char *send_msg = cJSON_Print(sendJSON);
+    
+    //Send the message to the user
+    send_to_user(send_msg, user);
+    
+    //Delete the JSON object and free send_msg
+    cJSON_Delete(sendJSON);
+    free(send_msg);
 }

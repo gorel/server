@@ -48,7 +48,7 @@ void handle_message(struct user **users, struct user *sender, struct cJSON *recv
 		return;
     
     // If the user typed !quit, the user has left.
-    if (!strncmp("!quit", msg, strlen("!quit ")))
+    if (!strncmp("!quit", msg, strlen("!quit")))
     {
     	//Send the user left message
 		send_user_left_message(*users, sender);
@@ -60,21 +60,83 @@ void handle_message(struct user **users, struct user *sender, struct cJSON *recv
     }
     
     // If the user is requesting a list of current users, build and send one.
-    if (!strncmp("!who", msg, strlen("!who ")))
+    if (!strncmp("!who", msg, strlen("!who")))
     {
     	send_who_list(*users, sender);
     	return;
     }
     
     //If the user is asking for the help text, send it
-    if (!strncmp("!help", msg, strlen("!help ")))
+    if (!strncmp("!help", msg, strlen("!help")))
     {
     	send_help_text(sender);
     	return;
     }
     
+    //If the user is trying to set their afk status, flip the current status and tell them what it is now
+    if (!strncmp("!afk", msg, strlen("!afk")))
+    {
+    	sender->afk = !sender->afk;
+    	send_afk_status(sender);
+    	return;
+    }
+    
+    //If the user is trying to ignore a user, set that appropriately
+    if (!strncmp("!ignore ", msg, strlen("!ignore ")))
+    {
+    	//The target user to ignore
+    	struct user *target;
+    	char *name;
+    	
+    	//We know the first word is !tell, so extract it with the string tokenizer
+    	strtok(msg, " ");
+    	
+    	//Find the target user with the string tokenizer
+    	name = strtok(NULL, " ");
+    	target = get_user_by_name(*users, name);
+    	
+    	//If the user was found, set them to ignored by the sender
+    	if (target != NULL)
+    	{
+    		ignore(sender, target);
+    		send_ignore_message(sender, target->name);
+    	}
+    	//Otherwise, tell the sender that their desired recipient could not be found
+    	else
+    		send_user_not_found_message(sender);
+    		
+    	return;
+    }
+    
+    //If the user is trying to unignore a user, set that appropriately
+    if (!strncmp("!unignore ", msg, strlen("un!ignore ")))
+    {
+    	//The target user to ignore
+    	struct user *target;
+    	char *name;
+    	
+    	//We know the first word is !tell, so extract it with the string tokenizer
+    	strtok(msg, " ");
+    	
+    	//Find the target user with the string tokenizer
+    	name = strtok(NULL, " ");
+    	target = get_user_by_name(*users, name);
+    	
+    	//If the user was found, set them to ignored by the sender
+    	if (target != NULL)
+    	{
+    		unignore(sender, target);
+    		send_unignore_message(sender, target->name);
+    	}
+    	//Otherwise, tell the sender that their desired recipient could not be found
+    	else
+    		send_user_not_found_message(sender);
+    		
+    	return;
+    }
+        
     //If the user is asking for a list of the currently online admins, send it
-    if (!strncmp("!admins", msg, strlen("!admins ")))
+    if (!strncmp("!admins", msg, strlen("!admins")))
     {
     	send_admin_list(*users, sender);
     	return;
@@ -83,7 +145,6 @@ void handle_message(struct user **users, struct user *sender, struct cJSON *recv
     //The user wants to send a private message
     if (!strncmp("!tell ", msg, strlen("!tell ")))
     {
-    
     	//The target user to send the message to
     	struct user *target;
     	char *name;
@@ -105,9 +166,20 @@ void handle_message(struct user **users, struct user *sender, struct cJSON *recv
     			return;
     		}
     		
+    		//If the target is ignoring the sender, tell the sender they are being ignored and don't let the message go through
+    		if (ignoring(target, sender))
+    		{
+    			send_you_are_ignored_message(sender, target->name);
+    			return;
+    		}
+    		
     		//Extract the rest of the message and send it to the target
     		msg = strtok(NULL, "\0");
     		send_private_message(sender->name, msg, target);
+    		
+    		//If the target is afk, warn the sender
+    		if (target->afk)
+    			send_afk_warning(sender);
     	}
     	//Otherwise, tell the sender that their desired recipient could not be found
     	else

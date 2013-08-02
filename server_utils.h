@@ -8,6 +8,7 @@
 #define MAX_WAIT 10
 #define MAXLEN 1024
 #define MAXMSG 512
+#define MAXIGNORE 20
 
 #define EARTH_IS_THIRD_PLANET_FROM_THE_SUN 1
 
@@ -20,8 +21,11 @@ struct user
 {
 	int fd;
 	char *name;
+	bool afk;
 	bool admin;
 	bool muted;
+	
+	struct user *ignore_list[MAXIGNORE];
 	
 	struct user *next;
 };
@@ -58,5 +62,14 @@ bool username_already_in_use(struct user *users, char *name);
 
 /* Remove a user from a linked list of users */
 void remove_user(struct user **users, struct user *user_to_remove);
+
+/* Update the user's ignore list to include the new user */
+void ignore(struct user *user, struct user *user_to_ignore);
+
+/* Update the user's ignore list to remove the given user */
+void unignore(struct user *user, struct user *user_to_unignore);
+
+/* Return whether or not the given user is ignoring <target> */
+bool ignoring(struct user *user, struct user *target);
 
 #endif

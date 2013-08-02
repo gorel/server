@@ -100,7 +100,7 @@ int accept_new_user(int listen_fd, struct sockaddr_storage *new_address)
 void add_user(int fd, struct sockaddr_storage *address, struct user **users)
 {
 	struct user *temp;
-	struct user *userptr;
+	struct user *iter;
     
     //Allocate memory for the new user
     temp = (struct user *)malloc(sizeof(struct user));
@@ -119,24 +119,24 @@ void add_user(int fd, struct sockaddr_storage *address, struct user **users)
     else
     {
 		//Go to the end of the linked list
-		for (userptr = *users; userptr->next != NULL; userptr = userptr->next);
+		for (iter = *users; iter->next != NULL; iter = iter->next);
 		
 		//Add the new user to the list of users
-		userptr->next = temp;
+		iter->next = temp;
 	}
 }
 
 /* Find the user associated with the given fd */
 struct user *get_user_by_fd(struct user *users, int fd)
 {
-	struct user *userptr = users;
+	struct user *iter = users;
 	
 	//Iterate through the user list to find who is associated with the given fd
-	while (userptr != NULL && userptr->fd != fd)
-		userptr = userptr->next;
+	while (iter != NULL && iter->fd != fd)
+		iter = iter->next;
 	
 	//Return a pointer to the user who sent the message
-	return userptr;
+	return iter;
 }
 
 /* Find the user associated with the given name -- may return NULL if user with that name not found */
@@ -200,4 +200,49 @@ void remove_user(struct user **users, struct user *user_to_remove)
 	close(user_to_remove->fd);
 	free(user_to_remove->name);
 	free(user_to_remove);
+}
+
+/* Update the user's ignore list to include the new user */
+void ignore(struct user *user, struct user *user_to_ignore)
+{
+	int i;
+	
+	//Iterate through the user's ignore list
+	for (i = 0; i < MAXIGNORE; i++)
+		//If ignore_list[i] is NULL, the slot is open -- set it to user_to_ignore and return
+		if (user->ignore_list[i] == NULL)
+		{
+			user->ignore_list[i] = user_to_ignore;
+			return;
+		}
+}
+
+/* Update the user's ignore list to remove the given user */
+void unignore(struct user *user, struct user *user_to_unignore)
+{
+	int i;
+	
+	//Iterate through the user's ignore list
+	for (i = 0; i < MAXIGNORE; i++)
+		//If the target is found, set ignore_list[i] to NULL and return
+		if (user->ignore_list[i] == user_to_unignore)
+		{
+			user->ignore_list[i] = NULL;
+			return;
+		}
+}
+
+/* Return whether or not the given user is ignoring <target> */
+bool ignoring(struct user *user, struct user *target)
+{
+	int i;
+	
+	//Iterate through the user's ignore list
+	for (i = 0; i < MAXIGNORE; i++)
+		//If the target is found, return TRUE
+		if (user->ignore_list[i] == target)
+			return TRUE;
+	
+	//The target was never found; return FALSE
+	return FALSE;
 }
