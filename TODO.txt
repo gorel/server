@@ -1,4 +1,5 @@
 ==BUGS==
+[Server]	(BUG) User can potentially ignore the same user 20 times
 
 ==QUICK==
 
