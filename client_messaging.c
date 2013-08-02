@@ -1,5 +1,5 @@
 #include "client_messaging.h"
-
+	
 /* Receive the initial message from the server and output it to console */
 bool receive_initial_message(int server_fd)
 {
@@ -124,8 +124,9 @@ void send_initial_message(int server_fd, char *name)
 		exit(ERROR_WITH_SEND);
 	}
 		
-	//Delete the cJSON Object
+	//Delete the cJSON Object and free send_msg
 	cJSON_Delete(sendJSON);
+	free(send_msg);
 }
 
 /* Wait for the user to input text then send it to the server */
@@ -166,8 +167,9 @@ int send_new_message(int server_fd, char *name)
 		exit(ERROR_WITH_SEND);
 	}
 		
-	//Delete the cJSON Object
+	//Delete the cJSON Object and free send_msg
 	cJSON_Delete(sendJSON);
+	free(send_msg);
 	
 	//If the user chose to quit, return QUIT_OPTION
 	if (!strcmp("!quit", msg))

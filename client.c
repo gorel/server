@@ -56,6 +56,10 @@ int main(int argc, char *argv[])
 
 		//Get the server's response here and find out if the username is valid
 		valid = receive_initial_message(server_fd);
+		
+		//If the name isn't valid, free it now or suffer a memory leak
+		if (!valid)
+			free(name);
 	}
 	
 	//Tell the user they have connected to the chat server
@@ -92,6 +96,10 @@ int main(int argc, char *argv[])
 				break;
 		}
 	}
+	
+	//Free all allocated memory
+	free(name);
+	free(addrs);
 	
 	//Print that the program is exiting and return 0
 	printf("Exiting...\n");

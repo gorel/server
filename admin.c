@@ -15,6 +15,7 @@ bool handle_admin_action(struct user **users, fd_set *master, struct user *sende
 	if (!strncmp("!adminhelp", action, strlen("!adminhelp ")))
 	{
 		send_admin_help_text(sender);
+		free(new_msg);
 		return TRUE;
 	}
 	
@@ -27,6 +28,7 @@ bool handle_admin_action(struct user **users, fd_set *master, struct user *sende
 		
 		//Try to promote the given user to an admin and return TRUE
 		promote_to_admin(*users, sender, target);
+		free(new_msg);
 		return TRUE;
 	}
 	
@@ -39,6 +41,7 @@ bool handle_admin_action(struct user **users, fd_set *master, struct user *sende
 		
 		//Try to mute the given user and return TRUE
 		mute(sender, target);
+		free(new_msg);
 		return TRUE;
 	}
 	
@@ -51,6 +54,7 @@ bool handle_admin_action(struct user **users, fd_set *master, struct user *sende
 		
 		//Try to unmute the given user and return TRUE
 		unmute(sender, target);
+		free(new_msg);
 		return TRUE;
 	}
 	
@@ -68,10 +72,12 @@ bool handle_admin_action(struct user **users, fd_set *master, struct user *sende
 		
 		//Try to kick the given user and return TRUE
 		kick(users, master, sender, target, reason);
+		free(new_msg);
 		return TRUE;
 	}
 	
 	//The sender is not performing an admin action.  Return FALSE
+	free(new_msg);
 	return FALSE;
 }
 

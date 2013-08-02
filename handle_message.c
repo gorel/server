@@ -206,4 +206,7 @@ void handle_message(struct user **users, struct user *sender, struct cJSON *recv
 	
     // Send message to other users
     send_to_all(*users, send_msg, sender);
+    
+    //Free send_msg
+    free(send_msg);
 }
