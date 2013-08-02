@@ -206,6 +206,10 @@ void remove_user(struct user **users, struct user *user_to_remove)
 void ignore(struct user *user, struct user *user_to_ignore)
 {
 	int i;
+
+	//If the user is already ignoring the user, don't let them add the person to the list again
+	if (ignoring(user, user_to_ignore))
+		return;
 	
 	//Iterate through the user's ignore list
 	for (i = 0; i < MAXIGNORE; i++)

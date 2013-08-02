@@ -1,5 +1,4 @@
 ==BUGS==
-[Server]	(BUG) User can potentially ignore the same user 20 times
 
 ==QUICK==
 
@@ -13,6 +12,7 @@
 
 
 ==COMPLETED==
+[Server]	(BUG) User can potentially ignore the same user 20 times
 [Both]		Create a function to create a default cJSON string from some given data
 [Client]	(BUG) After a user receives a "you are kicked" message, the client does not exit
 [Both]		Allow clients to !ignore users and not see private messages from them
