@@ -23,7 +23,8 @@ void handle_message(struct user **users, struct user *sender, char *recv_msg, fd
     // If the user has not been initialized yet, fill in the user's data
     if (sender->name == NULL)
     {
-    	char *name = cJSON_GetObjectItem(recvJSON, "from")->valuestring;
+    	//Get the name of the user by calling a string tokenizer to make sure the user did not put spaces in their name
+    	char *name = strtok(cJSON_GetObjectItem(recvJSON, "from")->valuestring, " ");
     	
     	//If that username is already in use, tell the user
     	if (username_already_in_use(*users, name))

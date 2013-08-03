@@ -4,7 +4,7 @@
 void send_user_left_message(struct user *users, struct user *sender)
 {
 	//Print to standard output that the user has left the chat
-    fprintf(stderr, "%s has left the chat.\n", sender->name);
+    printf("%s has left the chat.\n", sender->name);
     
     //Allocate space for the leaveText
     char leave_text[strlen(" has left the chat.") + strlen(sender->name) + 1];

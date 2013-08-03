@@ -16,6 +16,17 @@ char *get_name(void)
 	//Null-terminate the name (and strip off the trailing newline character)
 	name[num_bytes - 1] = '\0';
 	
+	//If the name contains a space, put a null-terminator; don't allow names with spaces
+	char *iter;
+	for (iter = name; *iter != '\0'; iter++)
+		//If the iterator finds a space, replace it with a null character and warn the user before breaking from the loop
+		if (*iter == ' ')
+		{
+			*iter = '\0';
+			printf("Warning: Spaces not allowed.  Name shortened to %s.\n", name);
+			break;
+		}
+	
 	return name;
 }
 
