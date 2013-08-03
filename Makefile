@@ -1,6 +1,9 @@
 CFLAGS = -Wall -Werror -g
 CLIB = -lm -lpthread
 
+gtk_flags = `pkg-config --libs --cflags gtk+-2.0`
+glib_flags = `pkg-config --libs --cflags glib-2.0`
+
 all: server client
 	rm -f *.o *~
 
@@ -32,7 +35,7 @@ client_messaging: client_messaging.c client_utils generic_utils
 	ar rcu libclient.a client_messaging.o client_utils.o generic_utils.o
 
 client_utils: client_utils.c generic_utils 
-	gcc -c $(CFLAGS) client_utils.c 
-
+	gcc -c $(CFLAGS) client_utils.c
+	
 clean:
 	rm -f *~ server client *.o *.a
