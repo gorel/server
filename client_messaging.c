@@ -104,6 +104,14 @@ void *receive(void *thread_data)
             //Ensure that the msg is null terminated
             msg[mlen] = '\0';
             
+            //Print out the message being sent
+            if (!strcmp(from, "SERVER"))
+            	printf("%s\n", msg);
+            else if (private)
+            	printf("%s whispers: %s\n", from, msg);
+           	else
+           		printf("%s: %s\n", from, msg);
+                    
             //If the user was kicked from the server, decrement the semaphore and break out of the while loop 
             if (kicked)
             {
@@ -115,14 +123,6 @@ void *receive(void *thread_data)
 				break;
             }
             
-            //Print out the message being sent
-            if (!strcmp(from, "SERVER"))
-            	printf("%s\n", msg);
-            else if (private)
-            	printf("%s whispers: %s\n", from, msg);
-           	else
-           		printf("%s: %s\n", from, msg);
-                    
             //Free the JSON object
             cJSON_Delete(recvJSON);
         }
